@@ -1,1 +1,1 @@
-from ._post_to_medium import post
+from ._publish_to_medium import publish
