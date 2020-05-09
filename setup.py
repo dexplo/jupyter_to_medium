@@ -10,7 +10,7 @@ long_description = re.sub(pat, repl, long_description)
 
 setuptools.setup(
     name="jupyter_to_medium",
-    version="0.0.1",
+    version="0.0.2",
     author="Ted Petrou",
     author_email="petrou.theodore@gmail.com",
     description="Publish a Jupyter Notebook as a Medium blogpost",
@@ -25,7 +25,7 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    install_requires=["dataframe_image>=0.4"],
+    # install_requires=["dataframe_image>=0.4"],
     python_requires='>=3.6',
     include_package_data=True
 )
