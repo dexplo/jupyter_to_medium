@@ -1,6 +1,8 @@
 import setuptools
 import re
 
+from jupyter_to_medium import __version__
+
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
@@ -10,14 +12,14 @@ long_description = re.sub(pat, repl, long_description)
 
 setuptools.setup(
     name="jupyter_to_medium",
-    version="0.0.2",
+    version=__version__,
     author="Ted Petrou",
     author_email="petrou.theodore@gmail.com",
     description="Publish a Jupyter Notebook as a Medium blogpost",
     long_description=long_description,
     long_description_content_type="text/markdown",
     keywords="Jupyter Notebook Medium Blog",
-    url="https://github.com/dexplo/jupyter_to_medium",
+    url="https://github.com/dexplo/jupyter-to-medium",
     packages=setuptools.find_packages(),
     license='MIT',
     classifiers=[
@@ -25,7 +27,14 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    # install_requires=["dataframe_image>=0.4"],
+    data_files=[
+        ("etc/jupyter/nbconfig/notebook.d", [
+            "jupyter-config/nbconfig/notebook.d/jupyter_to_medium.json"
+        ]),
+        ("etc/jupyter/jupyter_notebook_config.d", [
+            "jupyter-config/jupyter_notebook_config.d/jupyter_to_medium.json"
+        ])
+    ],
     python_requires='>=3.6',
     include_package_data=True
 )
