@@ -1,7 +1,13 @@
 from pathlib import Path
 import json
 import re
+import urllib.parse
+
 import requests
+import nbformat
+from nbconvert.exporters import MarkdownExporter
+
+from ._preprocesors import MarkdownPreprocessor, NoExecuteDataFramePreprocessor
 
 
 class Publish:
@@ -14,12 +20,11 @@ class Publish:
     IMAGE_TYPES = {'png', 'gif', 'jpeg', 'jpg', 'tiff'}
     
 
-    def __init__(self, filename, integration_token, pub_name, dataframe_image, 
+    def __init__(self, filename, integration_token, pub_name, 
                  title, tags, publish_status, notify_followers, license, canonical_url):
         self.filename = Path(filename)
         self.integration_token = self.get_integration_token(integration_token)
         self.pub_name = pub_name
-        self.dataframe_image = dataframe_image
         self.title = title or self.filename.stem
         self.tags = tags
         self.publish_status = publish_status
@@ -27,6 +32,9 @@ class Publish:
         self.license = license
         self.canonical_url = canonical_url
         self.nb_home = self.filename.parent
+        self.image_dir_name = self.title + '_files'
+        self.resources = self.get_resources()
+        self.nb = self.get_notebook()
         
         self.headers = self.get_headers()
         self.author_id = self.get_author_id()
@@ -34,6 +42,17 @@ class Publish:
         self.md, self.image_data_dict = self.create_markdown()
         self.load_images_to_medium()
         self.publish_to_medium()
+
+    def get_resources(self):
+        resources = {'metadata': {'path': str(self.nb_home), 
+                                  'name': self.title},
+                     'output_files_dir': self.image_dir_name}
+        return resources
+
+    def get_notebook(self):
+        with open(self.filename) as f:
+            nb = nbformat.read(f, as_version=4)
+        return nb
 
     def get_integration_token(self, it):
         if not it:
@@ -67,54 +86,32 @@ class Publish:
                          f'Here is the data returned {data}')
 
     def create_markdown(self):
-        if self.dataframe_image:
-            if self.dataframe_image is True:
-                self.dataframe_image = {'filename': self.filename, 'execute': False}
-            from dataframe_image._convert import Converter, convert
-            import inspect
-            arg_spec = inspect.getargspec(convert)
-            defaults = dict(zip(arg_spec.args[1:], arg_spec.defaults))
-            defaults.update(self.dataframe_image)
-            # must convert to markdown
-            defaults['to'] = 'md'
-            c = Converter(**defaults)
-            c.convert()
-            md = self.get_markdown(c)
-            image_data_dict = self.get_image_data(c)
-        else:
-            from nbconvert.exporters import MarkdownExporter
-            me = MarkdownExporter()
-            md, resources = me.from_filename(self.filename)
-            image_data_dict = resources['outputs']
-            image_data_dict = self.get_md_image_data(md, image_data_dict)
+        output_dir = self.nb_home / self.image_dir_name
+        if not output_dir.exists():
+            output_dir.mkdir()
+        print('output dir is', output_dir)
+        print('image_dir_name is', self.image_dir_name)
+        mp = MarkdownPreprocessor(output_dir=output_dir,
+                                  image_dir_name=Path(self.image_dir_name))
+        self.nb, self.resources = mp.preprocess(self.nb, self.resources)
+
+        no_ex_pp = NoExecuteDataFramePreprocessor()
+        self.nb, self.resources = no_ex_pp.preprocess(self.nb, self.resources)
+
+        me = MarkdownExporter()
+        md, self.resources = me.from_notebook_node(self.nb, self.resources)
+        image_data_dict = self.resources['outputs']
+        image_data_dict = self.get_image_data(image_data_dict)
         return md, image_data_dict
 
-    def get_markdown(self, converter):
-        fn = converter.final_nb_home / (converter.document_name + '.md')
-        return open(fn).read()
-
-    def get_image_data(self, converter):
-        image_dir = converter.final_nb_home / converter.image_dir_name
-        image_data_dict = {}
+    def get_image_data(self, image_data_dict):
+        image_dir = self.nb_home / self.image_dir_name
         for file in image_dir.iterdir():
             data = open(file, 'rb').read()
-            rel_fn = Path(converter.image_dir_name) / file.name
+            rel_fn = Path(self.image_dir_name) / file.name
             image_data_dict[str(rel_fn)] = data
         return image_data_dict
 
-    def get_md_image_data(self, md, image_data_dict):
-        pat_inline = r'\!\[.*?\]\((.*?\.(?:gif|png|jpg|jpeg|tiff))'
-        pat_ref = r'\[.*?\]:\s*(.*?\.(?:gif|png|jpg|jpeg|tiff))'
-        inline_files = re.findall(pat_inline, md)
-        ref_files = re.findall(pat_ref, md)
-        all_files = [file.lower().strip() for file in inline_files + ref_files 
-                     if not file.lower().startswith('http')]
-        for file in all_files:
-            fn = self.nb_home / file
-            if fn.exists() and file not in image_data_dict:
-                image_data_dict[file] = open(fn, 'rb').read()
-        return image_data_dict
-        
     def load_images_to_medium(self):
         all_json = []
         for file, data in self.image_data_dict.items():
@@ -127,8 +124,7 @@ class Publish:
                 r = requests.post(self.IMAGE_URL, headers=self.headers, files=file_payload)
                 req_json = r.json()
                 new_url = req_json['data']['url']
-                # TODO: Find tool to make conversion to HTML links
-                self.md = self.md.replace(file.replace(' ', '%20'), new_url)
+                self.md = self.md.replace(urllib.parse.quote(file), new_url)
                 all_json.append(req_json)
         
         with open('medium_images_data_report.json', 'w') as f:
@@ -160,8 +156,8 @@ class Publish:
         self.result = requests.post(post_url, headers=self.headers, json=json_data)
         
 
-def publish(filename, integration_token=None, pub_name=None, dataframe_image=False, 
-            title=None, tags=None, publish_status='draft', notify_followers=False, 
+def publish(filename, integration_token=None, pub_name=None, title=None, 
+            tags=None, publish_status='draft', notify_followers=False, 
             license='all-rights-reserved', canonical_url=None):
     '''
     Publish a Jupyter Notebook directly to Medium as a blog post.
@@ -182,43 +178,6 @@ def publish(filename, integration_token=None, pub_name=None, dataframe_image=Fal
     
     pub_name : str, default `None`
         Name of Medium publication. Not necessary if publishing as a user.
-    
-    dataframe_image : bool or dict, default `False`
-        When False (default), the notebook will be converted to
-        markdown in its current state and sent to Medium.
-
-        When True, use the package dataframe_image to convert your 
-        notebooks to markdown. This is important if you have pandas
-        DataFrames as images, since Medium will just display the raw 
-        text otherwise.
-
-        Use a dictionary to supply keyword arguments to the `convert` 
-        function from dataframe_image. Below are the available keyword
-        arguments and their default values.
-
-        max_rows=30,
-        max_cols=10,
-        ss_width=1000,
-        ss_height=900,
-        resize=1,
-        chrome_path=None,
-        limit=None,
-        document_name=None,
-        execute=True,
-        save_notebook=False,
-        output_dir=None,
-        image_dir_name=None
-
-        
-        Use package dataframe_image to convert the notebook to markdown.
-        If you set this as `False`, then you must have your notebook 
-        already converted to markdown.
-        
-        Using dataframe_image converts pandas DataFrames to images, which
-        is necessary when publishing to Medium. A new markdown file will 
-        be created in the same directory as your notebook along with 
-        another direcory named {notebook_name}_files containing all
-        the DataFrame images (if you have any).
         
     title : str, default `None`
         Title of the Medium post. Leave as `None` to use the name 
@@ -243,6 +202,6 @@ def publish(filename, integration_token=None, pub_name=None, dataframe_image=Fal
         A URL of the original home of this content, if it was originally 
         published elsewhere.
     '''
-    p = Publish(filename, integration_token, pub_name, dataframe_image, title, 
-                tags, publish_status, notify_followers, license, canonical_url)
+    p = Publish(filename, integration_token, pub_name, title, tags, 
+                publish_status, notify_followers, license, canonical_url)
     return p.result.json()
