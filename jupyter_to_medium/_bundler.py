@@ -95,7 +95,6 @@ def upload(model, handler):
     kwargs['notify_followers'] = bool(kwargs['notify_followers'])
     kwargs['canonical_url'] = kwargs['canonical_url'] or None
 
-    print(kwargs)
     json_data = publish(**kwargs)
     return json_data
 
@@ -130,6 +129,5 @@ def bundle(handler, model):
         json_data = upload(model, handler)
         success(handler, json_data)
   
-    print('*********** after write')
     print(handler.request)
     handler.finish()
