@@ -27,14 +27,6 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    data_files=[
-        ("etc/jupyter/nbconfig/notebook.d", [
-            "jupyter-config/nbconfig/notebook.d/jupyter_to_medium.json"
-        ]),
-        ("etc/jupyter/jupyter_notebook_config.d", [
-            "jupyter-config/jupyter_notebook_config.d/jupyter_to_medium.json"
-        ])
-    ],
     python_requires='>=3.6',
     include_package_data=True
 )
