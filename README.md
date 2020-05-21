@@ -6,7 +6,9 @@ Publish Jupyter Notebooks as Medium blog posts directly from your notebook with 
 
 `pip install jupyter_to_medium`
 
-Then run the following command to enable the extension.
+### Should be automatically activated
+
+You should be able to skip the next step, but if the extension is not showing up in your notebook, run the following command:
 
 `jupyter bundlerextension enable --py jupyter_to_medium._bundler --sys-prefix`
 
