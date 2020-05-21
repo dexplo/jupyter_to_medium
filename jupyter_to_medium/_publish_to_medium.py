@@ -20,8 +20,9 @@ class Publish:
     IMAGE_TYPES = {'png', 'gif', 'jpeg', 'jpg', 'tiff'}
     
 
-    def __init__(self, filename, integration_token, pub_name, 
-                 title, tags, publish_status, notify_followers, license, canonical_url):
+    def __init__(self, filename, integration_token, pub_name, title, tags, 
+                 publish_status, notify_followers, license, canonical_url,
+                 chrome_path, download_markdown):
         self.filename = Path(filename)
         self.integration_token = self.get_integration_token(integration_token)
         self.pub_name = pub_name
@@ -158,7 +159,8 @@ class Publish:
 
 def publish(filename, integration_token=None, pub_name=None, title=None, 
             tags=None, publish_status='draft', notify_followers=False, 
-            license='all-rights-reserved', canonical_url=None):
+            license='all-rights-reserved', canonical_url=None, chrome_path=None,
+            download_markdown=False):
     '''
     Publish a Jupyter Notebook directly to Medium as a blog post.
 
@@ -173,8 +175,10 @@ def publish(filename, integration_token=None, pub_name=None, title=None,
         '.jupyter_to_medium/integration_token'. You'll need to create 
         this directory and file first and paste your token there.
 
-        Otherwise, you can pass the integration token directly as a 
-        string to this parameter.
+        Otherwise, pass the integration token directly as a string.
+
+        Learn how to get an integration token from Medium.
+        https://github.com/Medium/medium-api-docs
     
     pub_name : str, default `None`
         Name of Medium publication. Not necessary if publishing as a user.
@@ -190,7 +194,7 @@ def publish(filename, integration_token=None, pub_name=None, title=None,
     publish_status : str, default 'draft'
         The status of the post. Valid values are 'public', 'draft', or 'unlisted'.
     
-    notify_followers : bool, default False
+    notify_followers : bool, default `False`
         Whether to notify followers that the user has published.
     
     license : str, default 'all-rights-reserved'
@@ -201,7 +205,17 @@ def publish(filename, integration_token=None, pub_name=None, title=None,
     canonical_url : str, default `None`
         A URL of the original home of this content, if it was originally 
         published elsewhere.
+
+    chrome_path : str, default `None`
+        Path to your machine's chrome executable. By default, it is 
+        automatically found. Use this when chrome is not automatically found.
+
+    download_markdown : bool, default `False`
+        Whether or not to download the markdown and corresponding image files. They 
+        will be placed in the same folder containing the notebook. The images will be
+        in a folder with _files appended to it.
     '''
     p = Publish(filename, integration_token, pub_name, title, tags, 
-                publish_status, notify_followers, license, canonical_url)
+                publish_status, notify_followers, license, canonical_url,
+                chrome_path, download_markdown)
     return p.result.json()
