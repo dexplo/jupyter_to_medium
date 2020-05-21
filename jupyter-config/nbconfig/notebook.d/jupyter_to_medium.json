@@ -1,0 +1,9 @@
+{
+    "bundlerextensions":{
+        "jupyter_to_medium_bundler": {
+        "label": "Medium Post",
+        "module_name": "jupyter_to_medium._bundler",
+        "group": "deploy"
+        }
+    }
+}

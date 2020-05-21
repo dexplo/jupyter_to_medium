@@ -31,5 +31,9 @@ setuptools.setup(
     ],
     python_requires='>=3.6',
     entry_points={'console_scripts': ['jupyter_to_medium=jupyter_to_medium._command_line:main']},
-    include_package_data=True
+    include_package_data=True,
+    data_files=[("etc/jupyter/nbconfig/notebook.d", [
+                    "jupyter-config/nbconfig/notebook.d/jupyter_to_medium.json"
+                    ])
+                    ]
 )
