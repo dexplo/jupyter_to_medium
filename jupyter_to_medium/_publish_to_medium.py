@@ -90,8 +90,6 @@ class Publish:
         output_dir = self.nb_home / self.image_dir_name
         if not output_dir.exists():
             output_dir.mkdir()
-        print('output dir is', output_dir)
-        print('image_dir_name is', self.image_dir_name)
         mp = MarkdownPreprocessor(output_dir=output_dir,
                                   image_dir_name=Path(self.image_dir_name))
         self.nb, self.resources = mp.preprocess(self.nb, self.resources)
