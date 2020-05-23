@@ -16,11 +16,15 @@ You should be able to skip the next step, but if the extension is not showing up
 
 Before using this package, you must request an integration token from Medium. [Read the instructions here on how to get your integration token](https://github.com/Medium/medium-api-docs).
 
+### Save your integration token
+
+Once you have your integration token, create the folder and file `.jupyter_to_medium/integration_token` in your home directory and save the token there. If you don't save it, you'll need to access it every time you wish to make a new post.
+
 ## Usage
 
 There are three ways to publish notebooks:
 
-* Within an active notebok
+* Within an active notebook
 * Using a Python script
 * From the command line
 
@@ -55,18 +59,25 @@ Pass the `publish` function the location of the Jupyter Notebook you would like 
 >>> jtm.publish('My Awesome Jupyter Notebook.ipynb',
                 integration_token=None,
                 pub_name=None,
-                dataframe_image=True,
                 title=None,
                 tags=None,
                 publish_status='draft',
                 notify_followers=False,
                 license='all-rights-reserved',
-                canonical_url=None)
+                canonical_url=None,
+                chrome_path=None,
+                download_markdown=False)
 ```
 
 If successful, JSON data will be returned with the URL.
 
-### Publishing to Medium from the Command Line (upcoming)
+### Publishing to Medium from the Command Line
+
+Upon installation you'll have access to the command line program `jupyter_to_medium` with the same options as the above function.
+
+```bash
+jupyter_to_medium --pub-name="Dunder Data" "My Awesome Blog Post.ipynb"
+```
 
 ## Dependencies
 
