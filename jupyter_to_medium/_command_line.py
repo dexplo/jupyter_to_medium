@@ -16,10 +16,12 @@ Publish Jupyter Notebooks as Medium Blog posts.
 
 Request an integration token from Medium first!
 ===============================================
+
 https://github.com/Medium/medium-api-docs
 
 Required Positional Arguments
 =============================
+
 filename
     The filename of the notebook you wish to publish to Medium
 
@@ -120,8 +122,11 @@ def main():
         print(HELP)
     else:
         args = vars(parser.parse_args())
-        args['tags'] = [tag.strip() for tag in args['tags'].split(',')[:5]]
+        if args['tags']:
+            args['tags'] = [tag.strip() for tag in args['tags'].split(',')[:5]]
         del args['help']
         from ._publish_to_medium import publish
         data = publish(**args)
+        
+        # TODO: Prettify output
         print(data)
