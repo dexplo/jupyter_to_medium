@@ -28,15 +28,13 @@ def upload(model, handler):
     kwargs['tags'] = [tag.strip() for tag in kwargs['tags'].split(',')[:5]]
     kwargs['notify_followers'] = kwargs['notify_followers'] == "True"
     kwargs['canonical_url'] = kwargs['canonical_url'].strip() or None
-    kwargs['chrome_path'] = kwargs['chrome_path'].strip() or None
-    kwargs['download_markdown'] = kwargs['download_markdown'] == "True"
+
+    # add these options in the future to html form
+    # kwargs['chrome_path'] = kwargs['chrome_path'].strip() or None
+    # kwargs['download_markdown'] = kwargs['download_markdown'] == "True"
    
     try:
         data = publish(**kwargs)
-    except ValueError as e:
-        message = getattr(e, 'message', repr(e))
-        data = {'app_status': 'fail', 
-                'error_data': message}
     except Exception as e:
         message = getattr(e, 'message', repr(e))
         data = {'app_status': 'fail', 
@@ -72,8 +70,8 @@ def get_html_fail(data):
     html = read_html('fail')
     return html.format(error_message=error_message)
 
-    
-# @gen.coroutine
+
+# synchoronous execution
 def bundle(handler, model):
     """
     Parameters
