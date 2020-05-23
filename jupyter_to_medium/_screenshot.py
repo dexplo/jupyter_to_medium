@@ -24,7 +24,7 @@ def get_chrome_path(chrome_path=None):
     system = get_system()
     if chrome_path:
         return chrome_path
-    # help finding path - https://github.com/SeleniumHQ/selenium/wiki/ChromeDriver#requirements
+
     if system == "darwin":
         paths = [
             "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
@@ -79,7 +79,7 @@ class Screenshot:
 
     def get_css(self):
         mod_dir = Path(__file__).resolve().parent
-        css_file = mod_dir / "css" / "style.css"
+        css_file = mod_dir / "static" / "style.css"
         with open(css_file) as f:
             css = "<style>" + f.read() + "</style>"
         return css
