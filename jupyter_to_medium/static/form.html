@@ -1,0 +1,122 @@
+<head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+    <style>
+        .container {{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            /* margin-left: 28%;
+            margin-right: 28%; */
+        }}
+    </style>
+</head>
+<body>
+    <div class="col-sm-7 container">
+        <h1>Publish your Jupyter Notebook to Medium</h1>
+        <br>
+
+        <form method="GET">
+            {xsrf_input}
+
+            <div class="form-group row">
+                <label for="integration_token" class="col-sm-2 col-form-label">Integration Token</label>
+                <div class="col-sm-8">
+                  <input type="text" class="form-control" name="integration_token" id="integration_token" 
+                         placeholder="Enter integration token">
+                  <small class="form-text text-muted">
+                    You may leave this field blank if your integration token is located in your home 
+                    directory at '.jupyter_to_medium/integration_token'. If you don't have an integration 
+                    token, <a target="_blank" href="https://github.com/Medium/medium-api-docs">learn how to request one 
+                    from Medium.</a>
+                </small>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label for="title" class="col-sm-2 col-form-label">Title</label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" name="title" id="title" value="{title}"">
+                    <small class="form-text text-muted">This title is used for SEO and when rendering the post as a listing, but will not appear in the actual post.
+                                                        Use the first cell of the notebook with an H1 markdown header for the title. 
+                                                        i.e. # My Actual Blog Post Title
+                    </small>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label for="pub_name" class="col-sm-2 col-form-label">Publication Name</label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" name="pub_name" id="pub_name" placeholder="Enter publication name">
+                    <small class="form-text text-muted">Leave blank if you don't have a publication or if you wish to publish this 
+                        under your user account.
+                    </small>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label for="tags" class="col-sm-2 col-form-label">Tags</label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" name="tags" id="tags" placeholder="Enter tags">
+                    <small class="form-text text-muted">Separate each tag with a comma. Max of 5.</small>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label for="publish_status" class="col-sm-2 col-form-label">Publish Status</label>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="publish_status" id="draft" 
+                           value="draft" checked = "checked">
+                    <label class="form-check-label" for="draft">Draft</label>
+                </div>
+            </div>
+            
+            <div class="form-group row">
+                <label for="notify_followers" class="col-sm-2 col-form-label">Notify Followers</label>
+                <div class="form-check form-check-inline">
+                    <input type="radio" class="form-check-input" id="no" name="notify_followers" value="False" checked = "checked">
+                    <label for="no" class="form-check-label">No</label><br>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input type="radio" class="form-check-input" id="yes" name="notify_followers" value="True">
+                    <label for="yes" class="form-check-label">Yes</label><br>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label for="license" class="col-sm-2 col-form-label">License</label>
+                <select id="license" name="license">
+                    <option value="all-rights-reserved">All Rights Reserved</option>
+                    <option value="cc-40-by">cc-40-by</option>
+                    <option value="cc-40-by-sa">cc-40-by-sa</option>
+                    <option value="cc-40-by-nd">cc-40-by-nd</option>
+                    <option value="cc-40-by-nc">cc-40-by-nc</option>
+                    <option value="cc-40-by-nc-nd">cc-40-by-nc-nd</option>
+                    <option value="cc-40-by-nc-sa">cc-40-by-nc-sa</option>
+                    <option value="cc-40-zero">cc-40-zero</option>
+                    <option value="public-domain">public-domain</option>
+                </select>
+            </div>
+
+            <div class="form-group row">
+                <label for="canonical_url" class="col-sm-2 col-form-label">Canonical URL</label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" id="canonical_url" name="canonical_url">
+                    <small class="form-text text-muted">The original home of this content, if it was originally published elsewhere. 
+                                                        Provide the full URL beginning with 'http'. 
+                                                        i.e. https://my-personal-website.com/this-blog-post</small>
+                </div>                                         
+            </div>
+
+            <input type="hidden" name="bundler" value="jupyter_to_medium_bundler">
+            <input type="hidden" name="app_status" value="waiting">
+            
+            <div class="row justify-content-center">
+                <input type="submit" class="btn btn-primary text-center col-sm-4" value="Publish">
+            </div>
+        </form>
+    </div>
+</body>
