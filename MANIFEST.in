@@ -1,2 +1,2 @@
-include LICENSE jupyter_to_medium/css/*.css
+include LICENSE jupyter_to_medium/static/*.css jupyter_to_medium/static/*.html
 recursive-include jupyter-config *.json
