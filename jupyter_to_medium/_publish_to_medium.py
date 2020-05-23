@@ -32,18 +32,15 @@ class Publish:
         self.notify_followers = str(notify_followers).lower()
         self.license = license
         self.canonical_url = canonical_url
+        self.chrome_path = chrome_path
+        self.download_markdown = download_markdown
         self.nb_home = self.filename.parent
         self.image_dir_name = self.title + '_files'
         self.resources = self.get_resources()
         self.nb = self.get_notebook()
-        
         self.headers = self.get_headers()
-        self.author_id = self.get_author_id()
-        self.pub_id = self.get_pub_id()
-        self.md, self.image_data_dict = self.create_markdown()
-        self.load_images_to_medium()
-        self.publish_to_medium()
 
+        
     def get_resources(self):
         resources = {'metadata': {'path': str(self.nb_home), 
                                   'name': self.title},
@@ -72,19 +69,26 @@ class Publish:
 
     def get_author_id(self):
         r = requests.get(self.AUTHOR_URL, headers=self.headers)
-        return r.json()['data']['id']
+        try:
+            return r.json()['data']['id']
+        except KeyError:
+            raise ValueError('Problem authenticating author: \n' + r.text)
 
     def get_pub_id(self):
         if not self.pub_name:
             return ''
         pub_url = self.PUB_URL.format(author_id=self.author_id)
         r = requests.get(pub_url, headers=self.headers)
-        data = r.json()['data']
+        try:
+            data = r.json()['data']
+        except KeyError:
+            raise ValueError('Problem getting publication: \n' + r.text)
+
         for d in data:
             if d['name'] == self.pub_name:
                 return d['id']
-        raise ValueError(f'Publication {self.pub_name} was not found. '
-                         f'Here is the data returned {data}')
+        raise ValueError(f'Publication {self.pub_name} was not found.\n'
+                         f'Here is the publication data returned from Medium\n\n{data}')
 
     def create_markdown(self):
         output_dir = self.nb_home / self.image_dir_name
@@ -100,8 +104,17 @@ class Publish:
         me = MarkdownExporter()
         md, self.resources = me.from_notebook_node(self.nb, self.resources)
         image_data_dict = self.resources['outputs']
+        self.write_output_image_data(image_data_dict)
         image_data_dict = self.get_image_data(image_data_dict)
         return md, image_data_dict
+
+    def write_output_image_data(self, image_data_dict):
+        if self.download_markdown:
+            image_dir = self.nb_home / self.image_dir_name
+            for file, image_data in image_data_dict.items():
+                fn = image_dir / Path(file).name
+                with open(fn, 'wb') as f:
+                    f.write(image_data)
 
     def get_image_data(self, image_data_dict):
         image_dir = self.nb_home / self.image_dir_name
@@ -122,17 +135,28 @@ class Publish:
                 file_payload = {'image': (name, data, f'image/{extension}')}
                 r = requests.post(self.IMAGE_URL, headers=self.headers, files=file_payload)
                 req_json = r.json()
-                new_url = req_json['data']['url']
+                try:
+                    new_url = req_json['data']['url']
+                except KeyError:
+                    raise ValueError('Problem loading images: ' + r.text)
                 self.md = self.md.replace(urllib.parse.quote(file), new_url)
                 all_json.append(req_json)
         
         with open('medium_images_data_report.json', 'w') as f:
             json.dump(all_json, f, indent=4)
 
-        # updated markdown
-        new_md_filename = self.filename.stem + '_medium.md'
-        with open(self.nb_home / new_md_filename, 'w') as f:
-            f.write(self.md)
+    def keep_or_delete(self):
+        # download markdown and add extra image files
+        # or delete images
+        if self.download_markdown:
+            new_md_filename = self.filename.stem + '_medium.md'
+            with open(self.nb_home / new_md_filename, 'w') as f:
+                f.write(self.md)
+        else:
+            image_dir = self.nb_home / self.image_dir_name
+            for file in image_dir.iterdir():
+                file.unlink()
+            image_dir.rmdir()
 
     def publish_to_medium(self):
         if self.pub_id:
@@ -153,6 +177,14 @@ class Publish:
         if self.tags:
             json_data['tags'] = self.tags
         self.result = requests.post(post_url, headers=self.headers, json=json_data)
+
+    def main(self):
+        self.author_id = self.get_author_id()
+        self.pub_id = self.get_pub_id()
+        self.md, self.image_data_dict = self.create_markdown()
+        self.load_images_to_medium()
+        self.keep_or_delete()
+        self.publish_to_medium()
         
 
 def publish(filename, integration_token=None, pub_name=None, title=None, 
@@ -216,4 +248,5 @@ def publish(filename, integration_token=None, pub_name=None, title=None,
     p = Publish(filename, integration_token, pub_name, title, tags, 
                 publish_status, notify_followers, license, canonical_url,
                 chrome_path, download_markdown)
+    p.main()
     return p.result.json()
