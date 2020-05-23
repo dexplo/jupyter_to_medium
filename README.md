@@ -73,7 +73,7 @@ If successful, JSON data will be returned as a dictionary with the URL.
 
 ### Publishing to Medium from the Command Line
 
-Upon installation you'll have access to the command line program `jupyter_to_medium` with the same options as the above function.
+Upon installation, you'll have access to the command line program `jupyter_to_medium` with the same options as the above function.
 
 ```bash
 jupyter_to_medium --pub-name="Dunder Data" "My Awesome Blog Post.ipynb"
