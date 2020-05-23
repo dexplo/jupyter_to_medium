@@ -39,7 +39,18 @@ class Publish:
         self.resources = self.get_resources()
         self.nb = self.get_notebook()
         self.headers = self.get_headers()
+        self.validate_args()
 
+
+    def validate_args(self):
+        if self.publis_status != 'draft':
+            raise ValueError('Only "draft" is allowed as a publish status for now')
+
+        licenses = ['all-rights-reserved', 'cc-40-by', 'cc-40-by-sa', 'cc-40-by-nd', 
+                    'cc-40-by-nc', 'cc-40-by-nc-nd', 'cc-40-by-nc-sa', 'cc-40-zero', 
+                    'public-domain']
+        if self.license not in licenses:
+            raise ValueError('License must be one of', licenses)
         
     def get_resources(self):
         resources = {'metadata': {'path': str(self.nb_home), 
@@ -214,8 +225,12 @@ def publish(filename, integration_token=None, pub_name=None, title=None,
         Name of Medium publication. Not necessary if publishing as a user.
         
     title : str, default `None`
-        Title of the Medium post. Leave as `None` to use the name 
-        of the notebook as the title.
+        This title is used for SEO and when rendering the post as a listing, 
+        but will not appear in the actual post. Use the first cell of the 
+        notebook with an H1 markdown header for the title. 
+        i.e. # My Actual Blog Post Title 
+    
+        Leave as `None` to use the filename as this title
     
     tags : list of strings, default `None`
         List of tags to classify the post. Only the first five will be used. 
@@ -223,6 +238,7 @@ def publish(filename, integration_token=None, pub_name=None, title=None,
     
     publish_status : str, default 'draft'
         The status of the post. Valid values are 'public', 'draft', or 'unlisted'.
+        Only draft will be allowed for now. Finalize publication on Medium.
     
     notify_followers : bool, default `False`
         Whether to notify followers that the user has published.
