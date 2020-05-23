@@ -5,11 +5,8 @@ from tempfile import TemporaryDirectory
 from subprocess import run
 import base64
 import io
-
-import numpy as np
-from pandas import DataFrame
-from pandas.io.formats.style import Styler
-from PIL import Image
+import importlib
+import warnings
 
 
 def get_system():
@@ -101,52 +98,52 @@ class Screenshot:
             str(temp_html),
         ]
         run(executable=self.chrome_path, args=args)
-        pillow_data = Image.open(str(temp_img))
-        return np.array(pillow_data)
+        img_bytes = open(temp_img, 'rb').read()
+        buffer = io.BytesIO(img_bytes)
+        return buffer
 
-    def finalize_image(self, image_arr):
-        row_avg = image_arr.mean(axis=2).mean(1)
-        first_row = max(0, np.where(row_avg != 255)[0][0] - 20)
-        last_row = image_arr.shape[0] - np.where(row_avg[::-1] != 255)[0][0] + 10
+    def finalize_image(self, buffer):
+        from PIL import Image, ImageChops
 
-        # not cropping width so that images appear the same size
-        # column_avg = image_arr.mean(axis=2).mean(axis=0)[::-1]
-        # last_col = image_arr.shape[1] - np.where(column_avg != 255)[0][0] + 10
+        img = Image.open(buffer)
+        img_gray = img.convert('L')
+        bg = Image.new('L', img.size, 255)
+        diff = ImageChops.difference(img_gray, bg)
+        diff = ImageChops.add(diff, diff, 2.0, -100)
+        bbox = diff.getbbox()
+        new_y_max = bbox[-1] + 10
+        x_max = img.size[0]
+        img = img.crop((0, 0, x_max, new_y_max))
 
-        image_arr = image_arr[first_row:last_row, :]
-        img = Image.fromarray(image_arr)
         if self.resize != 1:
             w, h = img.size
             w, h = int(w // self.resize), int(h // self.resize)
             img = img.resize((w, h), Image.ANTIALIAS)
         return img
 
-    def get_base64_image_str(self, img):
-        buffered = io.BytesIO()
-        img.save(buffered, format="png", quality=95)
-        img_str = base64.b64encode(buffered.getvalue()).decode()
-        return img_str
+    def save_image(self, img):
+        buffer = io.BytesIO()
+        img.save(buffer, format="png", quality=95)
+        return buffer
 
-    def get_html(self, data):
-        if isinstance(data, DataFrame):
-            html = data.to_html(max_cols=self.max_cols, max_rows=self.max_rows, notebook=True)
-        elif isinstance(data, Styler):
-            html = data.set_table_attributes('dataframe_image="dataframe"').render()
-        elif isinstance(data, str):
-            html = data
-        else:
-            raise ValueError('Can only convert pandas DataFrames, Styler objects, and raw html')
-        return self.css + html 
+    def get_base64_image_str(self, buffer):
+        return base64.b64encode(buffer.getvalue()).decode()
 
     def run(self, html):
-        img_array = self.take_screenshot(html)
-        img = self.finalize_image(img_array)
-        img_str = self.get_base64_image_str(img)
+        buffer = self.take_screenshot(html)
+        
+        if importlib.util.find_spec('PIL'):
+            img = self.finalize_image(buffer)
+            buffer = self.save_image(img)
+        else:
+            warnings.warn('The pillow library is not installed. Unable to crop table images. '
+                          'Install it so that the white space around tables gets removed.')
+        img_str = self.get_base64_image_str(buffer)
         return img_str
 
     def repr_png_wrapper(self):
         def _repr_png_(data):
-            html = self.get_html(data)
+            html = self.css + data
             return self.run(html)
         return _repr_png_
 
