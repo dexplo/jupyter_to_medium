@@ -43,7 +43,7 @@ class Publish:
 
 
     def validate_args(self):
-        if self.publis_status != 'draft':
+        if self.publish_status != 'draft':
             raise ValueError('Only "draft" is allowed as a publish status for now')
 
         licenses = ['all-rights-reserved', 'cc-40-by', 'cc-40-by-sa', 'cc-40-by-nd', 
