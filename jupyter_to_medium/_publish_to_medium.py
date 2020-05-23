@@ -187,7 +187,12 @@ class Publish:
             json_data['canonicalUrl'] = self.canonical_url
         if self.tags:
             json_data['tags'] = self.tags
-        self.result = requests.post(post_url, headers=self.headers, json=json_data)
+        
+        req = requests.post(post_url, headers=self.headers, json=json_data)
+        try:
+            self.result = req.json()
+        except Exception as e:
+            raise ValueError('Problem with posting:\n' + req.text)
 
     def main(self):
         self.author_id = self.get_author_id()
@@ -265,4 +270,4 @@ def publish(filename, integration_token=None, pub_name=None, title=None,
                 publish_status, notify_followers, license, canonical_url,
                 chrome_path, download_markdown)
     p.main()
-    return p.result.json()
+    return p.result
