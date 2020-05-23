@@ -6,7 +6,7 @@ Publish Jupyter Notebooks as Medium blog posts directly from your notebook with 
 
 `pip install jupyter_to_medium`
 
-### Should be automatically activated
+### Automatically activated
 
 You should be able to skip the next step, but if the extension is not showing up in your notebook, run the following command:
 
@@ -30,7 +30,7 @@ There are three ways to publish notebooks:
 
 ### Publishing to Medium within a Notebook
 
-After enabling the extension, open the notebook you wish to publish and select the option `File -> Deploy as -> Medium Post`
+After installation, open the notebook you wish to publish and select the option `File -> Deploy as -> Medium Post`
 
 ![png](images/menu_option.png)
 
@@ -38,9 +38,7 @@ A new browser tab will open with a short form that needs to be completed.
 
 ![png](images/form.png)
 
-After clicking publish, the notebook and all images will be uploaded to Medium. Any HTML tables (such as pandas DataFrames) will be converted to images (via chrome) as Medium has no ability to represent tables. This is a time consuming process, so be prepared to wait. Check your terminal for updates on what is happening.
-
-If successful, you'll get the following response with a link to view the post.
+After clicking publish, the notebook and all images will be uploaded to Medium. Any HTML tables (such as pandas DataFrames) will be converted to images (via chrome), as Medium has no ability to represent tables. This is a time consuming process, so be prepared to wait. Check your terminal for updates. If successful, you'll get the following response with a link to view the post.
 
 ![png](images/success.png)
 
@@ -48,11 +46,13 @@ Click the link to view the post.
 
 ![png](images/post.png)
 
-I suggest keeping the setting to publish as a draft, then review on Medium and finalize the publishing there.
+### Finalize and publish on Medium
+
+As of now, your post will be published as a draft. Review and publish the post on Medium.
 
 ### Publishing to Medium with a Python Script
 
-Pass the `publish` function the location of the Jupyter Notebook you would like to publish as a Medium blog post
+In a separate script/notebook import `juptyer_to_medium` as a module. Pass the `publish` function the location of the Jupyter Notebook you would like to publish as a Medium blog post
 
 ```python
 >>> import jupyter_to_medium as jtm
@@ -69,7 +69,7 @@ Pass the `publish` function the location of the Jupyter Notebook you would like 
                 download_markdown=False)
 ```
 
-If successful, JSON data will be returned with the URL.
+If successful, JSON data will be returned as a dictionary with the URL.
 
 ### Publishing to Medium from the Command Line
 
@@ -81,4 +81,7 @@ jupyter_to_medium --pub-name="Dunder Data" "My Awesome Blog Post.ipynb"
 
 ## Dependencies
 
+* nbconvert
+* requests
+* pillow (if you have HTML tables)
 * Google Chrome / Brave browser
