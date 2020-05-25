@@ -1,0 +1,31 @@
+site_name: Jupyter to Medium
+theme:
+  name: material
+nav:
+  - Home: index.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github-alt
+      link: https://github.com/dexplo
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/TedPetrou
+    - icon: fontawesome/brands/linkedin
+      link: https://linkedin.com/in/TedPetrou
+    - icon: fontawesome/brands/youtube
+      link: https://www.youtube.com/c/dunderdata
+
+markdown_extensions:
+    - admonition
+    - toc:
+        permalink: True
+    - codehilite:
+        guess_lang: false
+
+plugins:
+    - search
+    - minify:
+        minify_html: true
+
+extra_javascript:
+  - https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML
