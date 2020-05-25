@@ -1,5 +1,5 @@
 from ._publish_to_medium import publish
-__version__ = '0.0.7'
+__version__ = '0.0.8'
 
 def _jupyter_nbextension_paths():
     return [dict(
