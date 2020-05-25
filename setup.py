@@ -9,7 +9,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 pat = r'!\[png\]\('
-repl = r'![png](https://raw.githubusercontent.com/dexplo/jupyter-to-medium/master/'
+repl = r'![png](https://raw.githubusercontent.com/dexplo/jupyter_to_medium/master/'
 long_description = re.sub(pat, repl, long_description)
 
 setuptools.setup(
@@ -21,7 +21,7 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     keywords="Jupyter Notebook Medium Blog",
-    url="https://github.com/dexplo/jupyter-to-medium",
+    url="https://github.com/dexplo/jupyter_to_medium",
     packages=setuptools.find_packages(),
     license='MIT',
     classifiers=[
