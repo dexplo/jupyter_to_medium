@@ -1,6 +1,6 @@
 # Jupyter to Medium
 
-[![](https://img.shields.io/pypi/v/bar_chart_race)](https://pypi.org/project/jupyter_to_medium)
+[![](https://img.shields.io/pypi/v/jupyter_to_medium)](https://pypi.org/project/jupyter_to_medium)
 [![PyPI - License](https://img.shields.io/pypi/l/jupyter_to_medium)](LICENSE)
 
 Publish Jupyter Notebooks as Medium blog posts directly from your notebook with the help of jupyter_to_medium.
