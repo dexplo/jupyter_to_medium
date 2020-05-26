@@ -35,19 +35,19 @@ There are three ways to publish notebooks:
 
 After installation, open the notebook you wish to publish and select the option `File -> Deploy as -> Medium Post`
 
-![png](../images/menu_option.png)
+![png](docs/images/menu_option.png)
 
 A new browser tab will open with a short form that needs to be completed.
 
-![png](../images/form.png)
+![png](docs/images/form.png)
 
 After clicking publish, the notebook and all images will be uploaded to Medium. Any HTML tables (such as pandas DataFrames) will be converted to images (via chrome), as Medium has no ability to represent tables. This is a time consuming process, so be prepared to wait. Check your terminal for updates. If successful, you'll get the following response with a link to view the post.
 
-![png](../images/success.png)
+![png](docs/images/success.png)
 
 Click the link to view the post.
 
-![png](../images/post.png)
+![png](docs/images/post.png)
 
 ### Finalize and publish on Medium
 
