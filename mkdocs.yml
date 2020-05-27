@@ -3,7 +3,7 @@ site_description: Publish a Jupyter Notebook as a Medium blog post
 site_author: Ted Petrou
 site_url: https://www.dexplo.org/jupyter_to_medium
 repo_url: https://github.com/dexplo/jupyter_to_medium
-copyright: 2020 @ Ted Petrou
+copyright: Copyright @ 2020 Ted Petrou
 
 theme:
   name: material
@@ -21,6 +21,8 @@ extra:
       link: https://linkedin.com/in/TedPetrou
     - icon: fontawesome/brands/youtube
       link: https://www.youtube.com/c/dunderdata
+    - icon: fontawesome/brands/facebook
+      link: https://www.facebook.com/dunderdata
 
 markdown_extensions:
     - admonition
