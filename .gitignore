@@ -6,3 +6,6 @@ dist/
 build/
 .vscode/
 site/
+*.pyc
+notebooks/
+*.json
