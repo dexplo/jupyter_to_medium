@@ -40,19 +40,21 @@
                 <label for="title" class="col-sm-2 col-form-label">Title</label>
                 <div class="col-sm-8">
                     <input type="text" class="form-control" name="title" id="title" value="{title}"">
-                    <small class="form-text text-muted">This title is used for SEO and when rendering the post as a listing, but will not appear in the actual post.
-                                                        Use the first cell of the notebook with an H1 markdown header for the title. 
-                                                        i.e. # My Actual Blog Post Title
+                    <small class="form-text text-muted">This title is used for SEO and when rendering the post as a listing, 
+                                                        but will not appear in the actual post. Use the first cell of the notebook 
+                                                        with an H1 markdown header for the title. i.e. # My Actual Blog Post Title
                     </small>
                 </div>
             </div>
 
             <div class="form-group row">
-                <label for="pub_name" class="col-sm-2 col-form-label">Publication Name</label>
+                <label for="pub_name" class="col-sm-2 col-form-label">Medium Publication Name</label>
                 <div class="col-sm-8">
-                    <input type="text" class="form-control" name="pub_name" id="pub_name" placeholder="Enter publication name">
-                    <small class="form-text text-muted">Leave blank if you don't have a publication or if you wish to publish this 
-                        under your user account.
+                    <input type="text" class="form-control" name="pub_name" id="pub_name" placeholder="Enter Medium publication name">
+                    <small class="form-text text-muted">Leave blank if you don't have a Medium Publication or if you wish to publish this 
+                        under your user account. 
+                        <a href="https://help.medium.com/hc/en-us/articles/115012095528-About-Medium-publications">Learn more about Medium Publications</a>,
+                         if you don't know what they are.
                     </small>
                 </div>
             </div>
@@ -65,41 +67,59 @@
                 </div>
             </div>
 
-            <div class="form-group row">
-                <label for="publish_status" class="col-sm-2 col-form-label">Publish Status</label>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="publish_status" id="draft" 
-                           value="draft" checked = "checked">
-                    <label class="form-check-label" for="draft">Draft</label>
+            <fieldset class="form-group">
+                <div class="row">
+                    <legend class="col-form-label col-sm-2 pt-0">Publish Status</legend>
+                    <div class="col-sm-10">
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="publish_status" id="draft" 
+                                value="draft" checked = "checked">
+                            <label class="form-check-label" for="draft">Draft</label>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            
-            <div class="form-group row">
-                <label for="notify_followers" class="col-sm-2 col-form-label">Notify Followers</label>
-                <div class="form-check form-check-inline">
-                    <input type="radio" class="form-check-input" id="no" name="notify_followers" value="False" checked = "checked">
-                    <label for="no" class="form-check-label">No</label><br>
-                </div>
-                <div class="form-check form-check-inline">
-                    <input type="radio" class="form-check-input" id="yes" name="notify_followers" value="True">
-                    <label for="yes" class="form-check-label">Yes</label><br>
-                </div>
-            </div>
+            </fieldset>
 
-            <div class="form-group row">
-                <label for="license" class="col-sm-2 col-form-label">License</label>
-                <select id="license" name="license">
-                    <option value="all-rights-reserved">All Rights Reserved</option>
-                    <option value="cc-40-by">cc-40-by</option>
-                    <option value="cc-40-by-sa">cc-40-by-sa</option>
-                    <option value="cc-40-by-nd">cc-40-by-nd</option>
-                    <option value="cc-40-by-nc">cc-40-by-nc</option>
-                    <option value="cc-40-by-nc-nd">cc-40-by-nc-nd</option>
-                    <option value="cc-40-by-nc-sa">cc-40-by-nc-sa</option>
-                    <option value="cc-40-zero">cc-40-zero</option>
-                    <option value="public-domain">public-domain</option>
-                </select>
-            </div>
+            <fieldset class="form-group">
+                <div class="row">
+                  <legend class="col-form-label col-sm-2 pt-0">Notify Followers</legend>
+                  <div class="col-sm-10">
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" type="radio" name="notify_followers" 
+                             id="yes" value="True">
+                      <label class="form-check-label" for="yes">
+                        Yes
+                      </label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" type="radio" name="notify_followers" 
+                             id="no" value="False" checked="checked">
+                      <label class="form-check-label" for="no">
+                        No
+                      </label>
+                    </div>
+                  </div>
+                </div>
+            </fieldset>
+
+            <fieldset class="form-group">
+                <div class="row">
+                    <legend class="col-form-label col-sm-2 pt-0">License</legend>
+                    <div class="col-sm-10">
+                        <select id="license" name="license">
+                            <option value="all-rights-reserved">All Rights Reserved</option>
+                            <option value="cc-40-by">cc-40-by</option>
+                            <option value="cc-40-by-sa">cc-40-by-sa</option>
+                            <option value="cc-40-by-nd">cc-40-by-nd</option>
+                            <option value="cc-40-by-nc">cc-40-by-nc</option>
+                            <option value="cc-40-by-nc-nd">cc-40-by-nc-nd</option>
+                            <option value="cc-40-by-nc-sa">cc-40-by-nc-sa</option>
+                            <option value="cc-40-zero">cc-40-zero</option>
+                            <option value="public-domain">public-domain</option>
+                        </select>
+                    </div>
+                </div>
+          </fieldset> 
 
             <div class="form-group row">
                 <label for="canonical_url" class="col-sm-2 col-form-label">Canonical URL</label>
@@ -113,10 +133,10 @@
 
             <input type="hidden" name="bundler" value="jupyter_to_medium_bundler">
             <input type="hidden" name="app_status" value="waiting">
-            
-            <div class="form-group row justify-content-center">
-                <input type="submit" class="btn btn-primary text-center col-sm-4" value="Publish"><br>
-                <small class="form-text text-muted">Post status is set to draft. After submitting, go to Medium to officially publish.</small>
+            <br>
+            <div class="form-group row d-flex flex-column justify-content-center align-items-center">
+                <input type="submit" class="btn btn-primary text-center col-sm-4" value="Publish">
+                <small class="form-text text-muted">Post status is set to draft. After submitting, go to Medium to finalize publishing.</small>
             </div>
         </form>
     </div>
