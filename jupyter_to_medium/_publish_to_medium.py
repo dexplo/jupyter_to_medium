@@ -150,7 +150,7 @@ class Publish:
                     new_url = req_json['data']['url']
                 except KeyError:
                     raise ValueError('Problem loading images: ' + r.text)
-                self.md = self.md.replace(urllib.parse.quote(file), new_url)
+                self.md = self.md.replace(urllib.parse.quote(fp.as_posix()), new_url)
                 all_json.append(req_json)
         
         with open('medium_images_data_report.json', 'w') as f:
