@@ -126,7 +126,4 @@ def main():
             args['tags'] = [tag.strip() for tag in args['tags'].split(',')[:5]]
         del args['help']
         from ._publish_to_medium import publish
-        data = publish(**args)
-        
-        # TODO: Prettify output
-        print(data)
+        publish(**args)

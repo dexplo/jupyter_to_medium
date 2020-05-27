@@ -194,6 +194,20 @@ class Publish:
         except Exception as e:
             raise ValueError('Problem with posting:\n' + req.text)
 
+    def print_results(self):
+        data = self.result
+        success = 'data' in data and 'url' in data['data']
+        print('\n\n')
+        if not success:
+            print('Failed to post to Medium. See returned message below')
+            print('----------------------------------------------------')
+            print(data)
+        else:
+            print('Successfully posted to Medium!!!')
+            print('--------------------------------')
+            for k, v in data['data'].items():
+                print(f'{k:20}{v}')
+
     def main(self):
         self.author_id = self.get_author_id()
         self.pub_id = self.get_pub_id()
@@ -201,6 +215,7 @@ class Publish:
         self.load_images_to_medium()
         self.keep_or_delete()
         self.publish_to_medium()
+        self.print_results()
         
 
 def publish(filename, integration_token=None, pub_name=None, title=None, 

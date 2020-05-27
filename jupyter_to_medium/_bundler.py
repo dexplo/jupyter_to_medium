@@ -59,10 +59,8 @@ def get_html_form(xsrf_input, title):
     return html.format(xsrf_input=xsrf_input, title=title)
 
 def get_html_success(data):
-    url = data['url']
-    title = data['title']
     html = read_html('success')
-    return html.format(url=url, title=title)
+    return html.format(**data)
 
 def get_html_fail(data):
     error_data = data['error_data']
