@@ -85,8 +85,8 @@ Optional Keyword Arguments
     automatically found. Use this when chrome is not automatically found.
     (default: None)
 
---download-markdown
-    Whether or not to download the markdown and corresponding image files. They 
+--save-markdown
+    Whether or not to save the markdown and corresponding image files. They 
     will be placed in the same folder containing the notebook. The images will be
     in a folder with _files appended to it.
     True or False (default: False)
@@ -115,7 +115,7 @@ parser.add_argument('--license', type=str, choices=['all-rights-reserved', 'cc-4
     'cc-40-zero', 'public-domain'], default='all-rights-reserved')
 parser.add_argument('--canonical-url', type=str)
 parser.add_argument('--chrome-path', type=str)
-parser.add_argument('--download-markdown', type=bool, default=False)
+parser.add_argument('--save-markdown', type=bool, default=False)
 
 def main():
     if len(sys.argv) == 1 or '-h' in sys.argv or '--help' in sys.argv:
