@@ -52,6 +52,9 @@ class Publish:
                     'public-domain']
         if self.license not in licenses:
             raise ValueError('License must be one of', licenses)
+
+        if not isinstance(self.tags, list):
+            raise TypeError('Must use a list of strings for the tags and not', self.tags)
         
     def get_resources(self):
         resources = {'metadata': {'path': str(self.nb_home), 
