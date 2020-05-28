@@ -30,8 +30,9 @@
                   <small class="form-text text-muted">
                     You may leave this field blank if your integration token is located in your home 
                     directory at '.jupyter_to_medium/integration_token'. If you don't have an integration 
-                    token, <a target="_blank" href="https://github.com/Medium/medium-api-docs">learn how to request one 
-                    from Medium.</a>
+                    token, <a target="_blank" href="https://github.com/Medium/medium-api-docs#21-self-issued-access-tokens">learn how to request one 
+                    from Medium.</a> That page will instruct you to email <a href="mailto:yourfriends@medium.com">yourfriends@medium.com</a>
+                    allowing you to create a token in <a href="https://medium.com/me/settings">your Medium settings.</a>
                 </small>
                 </div>
             </div>
@@ -131,12 +132,40 @@
                 </div>                                         
             </div>
 
+            <fieldset class="form-group">
+                <div class="row">
+                  <legend class="col-form-label col-sm-2 pt-0">Save Markdown</legend>
+                  <div class="col-sm-8">
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" type="radio" name="save_markdown" 
+                             id="yes_md" value="True">
+                      <label class="form-check-label" for="yes_md">
+                        Yes
+                      </label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" type="radio" name="save_markdown" 
+                             id="no_md" value="False" checked="checked">
+                      <label class="form-check-label" for="no_md">
+                        No
+                      </label>
+                    </div>
+                    <small class="form-text text-muted">If selected, the Markdown file sent to Medium will 
+                        be saved. The images will also be saved in a directory named {title}_files with 
+                        metadata of these images saved in {title}_image_data.json. All of these files
+                        will be saved in the same directory as the notebook.</small>
+                  </div>
+                </div>
+            </fieldset>
+
+
             <input type="hidden" name="bundler" value="jupyter_to_medium_bundler">
             <input type="hidden" name="app_status" value="waiting">
             <br>
             <div class="form-group row d-flex flex-column justify-content-center align-items-center">
                 <input type="submit" class="btn btn-primary text-center col-sm-4" value="Publish">
-                <small class="form-text text-muted">Post status is set to draft. After submitting, go to Medium to finalize publishing.</small>
+                <small class="form-text text-muted">Post status is set to draft. After submitting, go to Medium 
+                    to finalize publishing.</small>
             </div>
         </form>
     </div>
