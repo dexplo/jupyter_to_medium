@@ -115,6 +115,7 @@ class NoExecuteDataFramePreprocessor(Preprocessor):
                         if key.startswith('image'):
                             has_image_mimetype = True
                             if key == 'image/gif':
+                                # gifs not in jinja template
                                 key = 'image/png'
                             output['data'] = {key: value}
                             break
