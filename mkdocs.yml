@@ -7,9 +7,13 @@ copyright: Copyright @ 2020 Ted Petrou
 
 theme:
   name: material
+  features:
+    - tabs
 
 nav:
   - Home: index.md
+  - Dexplo Libraries:
+    - Dexplo: https://www.dexplo.org
 
 extra:
   social:
