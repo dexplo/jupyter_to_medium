@@ -105,11 +105,32 @@ ss_creator = make_repr_png()
 class NoExecuteDataFramePreprocessor(Preprocessor):
         
     def preprocess_cell(self, cell, resources, index):
+        nb_home = Path(resources['metadata']['path'])
         if cell['cell_type'] == 'code':
             outputs = cell.get('outputs', [])
             for output in outputs:
-                if 'data' in output and 'text/html' in output['data']:
-                    html = output['data']['text/html']
-                    if '</table>' in html and '</style>' in html:
-                        output['data'] = {'image/png': ss_creator(html)}
+                if 'data' in output:
+                    has_image_mimetype = False
+                    for key, value in output['data'].items():
+                        if key.startswith('image'):
+                            has_image_mimetype = True
+                            if key == 'image/gif':
+                                key = 'image/png'
+                            output['data'] = {key: value}
+                            break
+
+                    if not has_image_mimetype and 'text/html' in output['data']:
+                        html = output['data']['text/html']
+                        if '</table>' in html and '</style>' in html:
+                            output['data'] = {'image/png': ss_creator(html)}
+                        elif html.startswith('<img src'):
+                            pass
+                            # maybe necessary if image not embedded with Image(...)
+                            # image_files = get_image_tags(html)
+                            # if image_files:
+                            #     src = nb_home / image_files[0][1]
+                            #     ext = str(src).split('.')[-1].split('?')[0]
+                            #     data = open(src, 'rb').read()
+                            #     data = base64.b64encode(data).decode()
+                            #     output['data'] = {f'image/{ext}': data}
         return cell, resources 
