@@ -9,19 +9,19 @@ Publish Jupyter Notebooks as Medium blog posts directly from your notebook with 
 
 `pip install jupyter_to_medium`
 
-### Automatically activated
-
-You should be able to skip the next step, but if the extension is not showing up in your notebook, run the following command:
-
-`jupyter bundlerextension enable --py jupyter_to_medium._bundler --sys-prefix`
-
 ## Get an Integration Token from Medium
 
 Before using this package, you must request an integration token from Medium. [Read the instructions here on how to get your integration token](https://github.com/Medium/medium-api-docs).
 
 ### Save your integration token
 
-Once you have your integration token, create the folder and file `.jupyter_to_medium/integration_token` in your home directory and save the token there. If you don't save it, you'll need to access it every time you wish to make a new post.
+Once you have your integration token, create the following folder and file in your home directory.
+
+```
+.jupyter_to_medium/integration_token
+```
+
+If you don't save it, you'll need to access it every time you wish to make a new post.
 
 ## Usage
 
@@ -36,6 +36,11 @@ There are three ways to publish notebooks:
 After installation, open the notebook you wish to publish and select the option `File -> Deploy as -> Medium Post`
 
 ![png](images/menu_option.png)
+
+!!! note
+    The extension should be automatically activated in your notebook, but if the above command is not found, run the following from your command line.
+
+    `jupyter bundlerextension enable --py jupyter_to_medium._bundler --sys-prefix`
 
 A new browser tab will open with a short form that needs to be completed.
 
@@ -72,15 +77,19 @@ In a separate script/notebook import `juptyer_to_medium` as a module. Pass the `
                 download_markdown=False)
 ```
 
-If successful, JSON data will be returned as a dictionary with the URL.
+If successful, a message will be printed with the URL to your post.  Additionally, JSON data will be returned as a dictionary containing the returned request from Medium.
 
 ### Publishing to Medium from the Command Line
 
 Upon installation, you'll have access to the command line program `jupyter_to_medium` with the same options as the above function.
 
 ```bash
-jupyter_to_medium --pub-name="Dunder Data" "My Awesome Blog Post.ipynb"
+jupyter_to_medium --pub-name="Dunder Data" --tags="python, data science" "My Awesome Blog Post.ipynb"
 ```
+
+## Troubleshooting
+
+If your post is unsuccessful, a message with the error will be printed to the screen with information that might help you solve the issue.
 
 ## Dependencies
 
