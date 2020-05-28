@@ -17,7 +17,13 @@ You should be able to skip the next step, but if the extension is not showing up
 
 ## Get an Integration Token from Medium
 
-Before using this package, you must request an integration token from Medium. [Read the instructions here on how to get your integration token](https://github.com/Medium/medium-api-docs).
+Before using this package, you must request an integration token from Medium by emailing them at <a href="mailto:yourfriends@medium.com">yourfriends@medium.com</a> allowing you to create a token in <a href="https://medium.com/me/settings">your Medium settings.</a> You can read the [entire instructions on how to get your integration token](https://github.com/Medium/medium-api-docs#21-self-issued-access-tokens).
+
+### Creating the integration token
+
+Once your request to create integration tokens is accepted, navigate to <a href="https://medium.com/me/settings">your Medium settings.</a> Towards the bottom of the page exists the section on Integration Tokens. Enter a description for the token (`jupyter_to_medium` is a good choice) and then create the token.
+
+![](docs/images/integration_token.png)
 
 ### Save your integration token
 
