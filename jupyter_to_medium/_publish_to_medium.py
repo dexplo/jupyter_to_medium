@@ -155,7 +155,6 @@ class Publish:
                 all_json.append(req_json)
         
         if self.save_markdown:
-            print('in save markdown')
             with open(self.nb_home / self.img_data_json, 'w') as f:
                 json.dump(all_json, f, indent=4)
 
