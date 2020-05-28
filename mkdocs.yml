@@ -4,6 +4,7 @@ site_author: Ted Petrou
 site_url: https://www.dexplo.org/jupyter_to_medium
 repo_url: https://github.com/dexplo/jupyter_to_medium
 copyright: Copyright @ 2020 Ted Petrou
+google_analytics: ['UA-119777567-7', 'dexplo.org']
 
 theme:
   name: material
