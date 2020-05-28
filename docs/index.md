@@ -5,6 +5,23 @@
 
 Publish Jupyter Notebooks as Medium blog posts directly from your notebook with the help of jupyter_to_medium.
 
+## Target User
+
+Do you ....
+
+* Publish blog posts on Medium?
+* Use Jupyter Notebooks to write the bulk of your post?
+* Dislike the time and effort it takes to transfer your posts from Jupyter to Medium?
+
+If so, jupyter_to_medium will automate the process of taking your Jupyter Notebook as is and publishing it as a Medium post in almost no time at all saving huge amounts of time.
+
+## Motivation
+
+I've [published dozens of blog posts on Medium][0] myself with all of them beginning as Jupyter Notebooks. Manually converting them to Medium posts was a fairly lengthy, painstaking process. One particularly painful process was inserting tables, which Medium does not support, into my posts. Nearly all of my posts contain numerous pandas DataFrames ([such as this one][1], which has 40! DataFrames) which are represented as HTML tables within a notebook. I'd take screenshots of each one to insert them into my Medium posts.
+
+[0]: http://medium.com/dunder-data
+[1]: https://medium.com/dunder-data/selecting-subsets-of-data-in-pandas-6fcd0170be9c
+
 ## Installation
 
 `pip install jupyter_to_medium`
@@ -28,8 +45,8 @@ If you don't save it, you'll need to access it every time you wish to make a new
 There are three ways to publish notebooks:
 
 * Within an active notebook
-* Using a Python script
 * From the command line
+* Using a Python script
 
 ### Publishing to Medium within a Notebook
 
@@ -58,6 +75,14 @@ Click the link to view the post.
 
 As of now, your post will be published as a draft. Review and publish the post on Medium.
 
+### Publishing to Medium from the Command Line
+
+Upon installation, you'll have access to the command line program `jupyter_to_medium` with the same options as the above function.
+
+```bash
+jupyter_to_medium --pub-name="Dunder Data" --tags="python, data science" "My Awesome Blog Post.ipynb"
+```
+
 ### Publishing to Medium with a Python Script
 
 In a separate script/notebook import `juptyer_to_medium` as a module. Pass the `publish` function the location of the Jupyter Notebook you would like to publish as a Medium blog post
@@ -78,14 +103,6 @@ In a separate script/notebook import `juptyer_to_medium` as a module. Pass the `
 ```
 
 If successful, a message will be printed with the URL to your post.  Additionally, JSON data will be returned as a dictionary containing the returned request from Medium.
-
-### Publishing to Medium from the Command Line
-
-Upon installation, you'll have access to the command line program `jupyter_to_medium` with the same options as the above function.
-
-```bash
-jupyter_to_medium --pub-name="Dunder Data" --tags="python, data science" "My Awesome Blog Post.ipynb"
-```
 
 ## Troubleshooting
 

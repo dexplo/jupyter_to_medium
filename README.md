@@ -5,6 +5,23 @@
 
 Publish Jupyter Notebooks as Medium blog posts directly from your notebook with the help of jupyter_to_medium.
 
+## Target User
+
+Do you ....
+
+* Publish blog posts on Medium?
+* Use Jupyter Notebooks to write the bulk of your post?
+* Dislike the time and effort it takes to transfer your posts from Jupyter to Medium?
+
+If so, jupyter_to_medium will automate the process of taking your Jupyter Notebook as is and publishing it as a Medium post in almost no time at all saving huge amounts of time.
+
+## Motivation
+
+I've [published dozens of blog posts on Medium][0] myself with all of them beginning as Jupyter Notebooks. Manually converting them to Medium posts was a fairly lengthy, painstaking process. One particularly painful process was inserting tables, which Medium does not support, into my posts. Nearly all of my posts contain numerous pandas DataFrames ([such as this one][1], which has 40! DataFrames) which are represented as HTML tables within a notebook. I'd take screenshots of each one to insert them into my Medium posts.
+
+[0]: http://medium.com/dunder-data
+[1]: https://medium.com/dunder-data/selecting-subsets-of-data-in-pandas-6fcd0170be9c
+
 ## Installation
 
 `pip install jupyter_to_medium`
