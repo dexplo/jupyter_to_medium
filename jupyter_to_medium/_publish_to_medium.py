@@ -22,8 +22,9 @@ class Publish:
 
     def __init__(self, filename, integration_token, pub_name, title, tags, 
                  publish_status, notify_followers, license, canonical_url,
-                 chrome_path, download_markdown):
+                 chrome_path, save_markdown):
         self.filename = Path(filename)
+        self.img_data_json = self.filename.stem + '_image_data.json'
         self.integration_token = self.get_integration_token(integration_token)
         self.pub_name = pub_name
         self.title = title or self.filename.stem
@@ -33,7 +34,7 @@ class Publish:
         self.license = license
         self.canonical_url = canonical_url
         self.chrome_path = chrome_path
-        self.download_markdown = download_markdown
+        self.save_markdown = save_markdown
         self.nb_home = self.filename.parent
         self.image_dir_name = self.title + '_files'
         self.resources = self.get_resources()
@@ -120,7 +121,7 @@ class Publish:
         return md, image_data_dict
 
     def write_output_image_data(self, image_data_dict):
-        if self.download_markdown:
+        if self.save_markdown:
             image_dir = self.nb_home / self.image_dir_name
             for file, image_data in image_data_dict.items():
                 fn = image_dir / Path(file).name
@@ -153,13 +154,15 @@ class Publish:
                 self.md = self.md.replace(urllib.parse.quote(fp.as_posix()), new_url)
                 all_json.append(req_json)
         
-        with open('medium_images_data_report.json', 'w') as f:
-            json.dump(all_json, f, indent=4)
+        if self.save_markdown:
+            print('in save markdown')
+            with open(self.nb_home / self.img_data_json, 'w') as f:
+                json.dump(all_json, f, indent=4)
 
-    def keep_or_delete(self):
-        # download markdown and add extra image files
+    def save_or_delete(self):
+        # save markdown and add extra image files
         # or delete images
-        if self.download_markdown:
+        if self.save_markdown:
             new_md_filename = self.filename.stem + '_medium.md'
             with open(self.nb_home / new_md_filename, 'w') as f:
                 f.write(self.md)
@@ -213,7 +216,7 @@ class Publish:
         self.pub_id = self.get_pub_id()
         self.md, self.image_data_dict = self.create_markdown()
         self.load_images_to_medium()
-        self.keep_or_delete()
+        self.save_or_delete()
         self.publish_to_medium()
         self.print_results()
         
@@ -221,7 +224,7 @@ class Publish:
 def publish(filename, integration_token=None, pub_name=None, title=None, 
             tags=None, publish_status='draft', notify_followers=False, 
             license='all-rights-reserved', canonical_url=None, chrome_path=None,
-            download_markdown=False):
+            save_markdown=False):
     '''
     Publish a Jupyter Notebook directly to Medium as a blog post.
 
@@ -276,13 +279,13 @@ def publish(filename, integration_token=None, pub_name=None, title=None,
         Path to your machine's chrome executable. By default, it is 
         automatically found. Use this when chrome is not automatically found.
 
-    download_markdown : bool, default `False`
-        Whether or not to download the markdown and corresponding image files. They 
+    save_markdown : bool, default `False`
+        Whether or not to save the markdown and corresponding image files. They 
         will be placed in the same folder containing the notebook. The images will be
         in a folder with _files appended to it.
     '''
     p = Publish(filename, integration_token, pub_name, title, tags, 
                 publish_status, notify_followers, license, canonical_url,
-                chrome_path, download_markdown)
+                chrome_path, save_markdown)
     p.main()
     return p.result
