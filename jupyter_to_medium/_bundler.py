@@ -18,7 +18,7 @@ def _jupyter_bundlerextension_paths():
 def upload(model, handler):
     arguments = ['title', 'integration_token', 'pub_name', 'tags', 
                 'publish_status', 'notify_followers', 'license', 'canonical_url',
-                'chrome_path', 'download_markdown']
+                'chrome_path', 'save_markdown']
 
     kwargs = {arg: handler.get_query_argument(arg, None) for arg in arguments}
     path = model['path']
@@ -28,17 +28,17 @@ def upload(model, handler):
     kwargs['tags'] = [tag.strip() for tag in kwargs['tags'].split(',')[:5]]
     kwargs['notify_followers'] = kwargs['notify_followers'] == "True"
     kwargs['canonical_url'] = kwargs['canonical_url'].strip() or None
+    kwargs['save_markdown'] = kwargs['save_markdown'] == "True"
 
     # add these options in the future to html form
     # kwargs['chrome_path'] = kwargs['chrome_path'].strip() or None
-    # kwargs['download_markdown'] = kwargs['download_markdown'] == "True"
    
     try:
         data = publish(**kwargs)
     except Exception as e:
-        message = getattr(e, 'message', repr(e))
+        print(e)
         data = {'app_status': 'fail', 
-                'error_data': message}
+                'error_data': str(e)}
     else:
         if 'data' in data:
             data = data['data']
