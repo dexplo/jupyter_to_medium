@@ -40,7 +40,7 @@ Before using this package, you must request an integration token from Medium by 
 
 Once your request to create integration tokens is accepted, navigate to <a href="https://medium.com/me/settings">your Medium settings.</a> Towards the bottom of the page exists the section on Integration Tokens. Enter a description for the token (`jupyter_to_medium` is a good choice) and then create the token.
 
-![](docs/images/integration_token.png)
+![png](docs/images/integration_token.png)
 
 ### Save your integration token
 
@@ -51,8 +51,8 @@ Once you have your integration token, create the folder and file `.jupyter_to_me
 There are three ways to publish notebooks:
 
 * Within an active notebook
-* Using a Python script
 * From the command line
+* Using a Python script
 
 ### Publishing to Medium within a Notebook
 
@@ -72,30 +72,9 @@ Click the link to view the post.
 
 ![png](docs/images/post.png)
 
-### Finalize and publish on Medium
+#### Finalize and publish on Medium
 
 As of now, your post will be published as a draft. Review and publish the post on Medium.
-
-### Publishing to Medium with a Python Script
-
-In a separate script/notebook import `juptyer_to_medium` as a module. Pass the `publish` function the location of the Jupyter Notebook you would like to publish as a Medium blog post
-
-```python
->>> import jupyter_to_medium as jtm
->>> jtm.publish('My Awesome Jupyter Notebook.ipynb',
-                integration_token=None,
-                pub_name=None,
-                title=None,
-                tags=None,
-                publish_status='draft',
-                notify_followers=False,
-                license='all-rights-reserved',
-                canonical_url=None,
-                chrome_path=None,
-                download_markdown=False)
-```
-
-If successful, JSON data will be returned as a dictionary with the URL.
 
 ### Publishing to Medium from the Command Line
 
@@ -104,6 +83,27 @@ Upon installation, you'll have access to the command line program `jupyter_to_me
 ```bash
 jupyter_to_medium --pub-name="Dunder Data" "My Awesome Blog Post.ipynb"
 ```
+
+### Publishing to Medium with a Python Script
+
+In a separate script/notebook import `juptyer_to_medium` as a module. Pass the `publish` function the location of the Jupyter Notebook you would like to publish as a Medium blog post
+
+```python
+import jupyter_to_medium as jtm
+jtm.publish('My Awesome Jupyter Notebook.ipynb',
+            integration_token=None,
+            pub_name=None,
+            title=None,
+            tags=None,
+            publish_status='draft',
+            notify_followers=False,
+            license='all-rights-reserved',
+            canonical_url=None,
+            chrome_path=None,
+            download_markdown=False)
+```
+
+If successful, JSON data will be returned as a dictionary with the URL.
 
 ## Dependencies
 
