@@ -13,11 +13,11 @@ Do you ....
 * Use Jupyter Notebooks to write the bulk of your post?
 * Dislike the time and effort it takes to transfer your posts from Jupyter to Medium?
 
-If so, jupyter_to_medium will automate the process of taking your Jupyter Notebook as is and publishing it as a Medium post in almost no time at all saving huge amounts of time.
+If so, jupyter_to_medium will automate the process of taking your Jupyter Notebook as is and publishing it as a Medium post in almost no time at all, saving huge amounts of time.
 
 ## Motivation
 
-I've [published dozens of blog posts on Medium][0] myself with all of them beginning as Jupyter Notebooks. Manually converting them to Medium posts was a fairly lengthy, painstaking process. One particularly painful process was inserting tables, which Medium does not support, into my posts. Nearly all of my posts contain numerous pandas DataFrames ([such as this one][1], which has 40! DataFrames) which are represented as HTML tables within a notebook. I'd take screenshots of each one to insert them into my Medium posts.
+I've [published dozens of blog posts on Medium][0] myself, all of them beginning as Jupyter Notebooks. Manually converting them to Medium posts was a lengthy, painstaking process. One particularly painful process was inserting tables, which Medium does not support, into my posts. Nearly all of my posts contain numerous pandas DataFrames ([such as this one][1], which has 40! DataFrames) which are represented as HTML tables within a notebook. I'd have to take screenshots of each one to insert them into my Medium posts.
 
 [0]: http://medium.com/dunder-data
 [1]: https://medium.com/dunder-data/selecting-subsets-of-data-in-pandas-6fcd0170be9c
@@ -38,7 +38,7 @@ Once you have your integration token, create the following folder and file in yo
 .jupyter_to_medium/integration_token
 ```
 
-If you don't save it, you'll need to access it every time you wish to make a new post.
+If you don't save it to this file, you'll need to access it every time you make a new post.
 
 ## Usage
 
@@ -85,21 +85,21 @@ jupyter_to_medium --pub-name="Dunder Data" --tags="python, data science" "My Awe
 
 ### Publishing to Medium with a Python Script
 
-In a separate script/notebook import `juptyer_to_medium` as a module. Pass the `publish` function the location of the Jupyter Notebook you would like to publish as a Medium blog post
+In a separate script/notebook, import `juptyer_to_medium` as a module. Pass the `publish` function the location of the Jupyter Notebook you would like to publish as a Medium blog post.
 
 ```python
->>> import jupyter_to_medium as jtm
->>> jtm.publish('My Awesome Jupyter Notebook.ipynb',
-                integration_token=None,
-                pub_name=None,
-                title=None,
-                tags=None,
-                publish_status='draft',
-                notify_followers=False,
-                license='all-rights-reserved',
-                canonical_url=None,
-                chrome_path=None,
-                download_markdown=False)
+import jupyter_to_medium as jtm
+jtm.publish('My Awesome Jupyter Notebook.ipynb',
+            integration_token=None,
+            pub_name=None,
+            title=None,
+            tags=None,
+            publish_status='draft',
+            notify_followers=False,
+            license='all-rights-reserved',
+            canonical_url=None,
+            chrome_path=None,
+            download_markdown=False)
 ```
 
 If successful, a message will be printed with the URL to your post.  Additionally, JSON data will be returned as a dictionary containing the returned request from Medium.
