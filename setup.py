@@ -1,8 +1,10 @@
 import re
-
 import setuptools
 
-from jupyter_to_medium import __version__
+with open('jupyter_to_medium/__init__.py', 'r') as f:
+    for line in f:
+        if line.startswith('__version__'):
+            version = line.split("'")[1]
 
 
 with open("README.md", "r") as fh:
@@ -14,7 +16,7 @@ long_description = re.sub(pat, repl, long_description)
 
 setuptools.setup(
     name="jupyter_to_medium",
-    version=__version__,
+    version=version,
     author="Ted Petrou",
     author_email="petrou.theodore@gmail.com",
     description="Publish a Jupyter Notebook as a Medium blogpost",
