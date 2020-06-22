@@ -10,7 +10,7 @@ Publish Jupyter Notebooks as Medium blog posts directly from your notebook with 
 Do you ....
 
 * Publish blog posts on Medium?
-* Use Jupyter Notebooks to write the bulk of your post?
+* Use Jupyter Notebooks to write your posts?
 * Dislike the time and effort it takes to transfer your posts from Jupyter to Medium?
 
 If so, jupyter_to_medium will automate the process of taking your Jupyter Notebook as is and publishing it as a Medium post in almost no time at all saving huge amounts of time.
