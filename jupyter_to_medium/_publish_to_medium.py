@@ -29,7 +29,7 @@ class Publish:
         self.integration_token = self.get_integration_token(integration_token)
         self.pub_name = pub_name
         self.title = title or self.filename.stem
-        self.tags = tags
+        self.tags = tags or []
         self.publish_status = publish_status
         self.notify_followers = str(notify_followers).lower()
         self.license = license
@@ -118,8 +118,6 @@ class Publish:
                                   image_dir_name=Path(self.image_dir_name))
         self.nb, self.resources = mp.preprocess(self.nb, self.resources)
 
-        
-        
         no_ex_pp = NoExecuteDataFramePreprocessor()
         if self.table_conversion == 'chrome':
             converter = Screenshot(max_rows=30, max_cols=10, ss_width=1400, 

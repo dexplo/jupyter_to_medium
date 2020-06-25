@@ -6,6 +6,41 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 
+def html_to_df(html):
+    append = False
+
+    try:
+        df_new = pd.read_html(html, index_col=0)[0]
+        append = True
+    except:
+        df_new = pd.read_html(html)[0]
+        
+    if isinstance(df_new.columns, pd.MultiIndex):
+        bottom_level = df_new.columns.get_level_values(-1).tolist()
+
+        # assume that once Unnamed starts end of index
+        idx_names = []
+        for val in bottom_level:
+            if val.startswith('Unnamed:'):
+                break
+            idx_names.append(val)
+            
+        n = len(df_new.columns.levels)
+        m = len(idx_names)
+        col_values = []
+        for i in range(n - 1):
+            col_values.append(df_new.columns.get_level_values(i).tolist()[m:])
+            
+        if len(col_values) == 1:
+            columns = col_values[0]
+        else:
+            columns = pd.MultiIndex.from_tuples([col for col in zip(*col_values)])
+
+        df_new.columns = idx_names + list(range(len(columns)))
+        df_new = df_new.set_index(idx_names, append=append)
+        df_new.columns = columns
+    return df_new
+
 def get_col_widths(df):
     col_len = []
     total = 0
@@ -44,6 +79,7 @@ def get_values(df, wrap_width):
         df[col] = df[col].apply(handle_decimal, wrap=wrap, width=wrap_width)
     return df.values.tolist()
 
+
 def crop_image(buffer):
     from PIL import Image, ImageChops
     img = Image.open(buffer)
@@ -72,30 +108,8 @@ def save_image(img):
     return buffer
 
 
-def mpl_make_table(html, dpi=100, figwidth=20, fontsize=22):
-    # TODO: Make work for multilevel columns
-    try:
-        df = pd.read_html(html, index_col=0)[0]
-    except:
-        df = pd.read_html(html)[0]
-    
-    if isinstance(df.columns, pd.MultiIndex):
-        bottom_level = df.columns.get_level_values(-1).tolist()
-
-        # assume that once Unnamed starts end of index
-        idx_names = []
-        for val in bottom_level:
-            if val.startswith('Unnamed:'):
-                break
-            idx_names.append(val)
-
-        top_level = df.columns.get_level_values(0).tolist()
-        col_names = top_level[len(idx_names):]
-
-        df.columns = idx_names + col_names
-        df = df.set_index(idx_names)
-        
-    
+def mpl_make_table(html, dpi=100, figwidth=20, fontsize=23):
+    df = html_to_df(html)
     height = df.shape[0] * 1
     fig = plt.Figure(dpi=dpi, figsize=(figwidth, height))
     ax = fig.add_subplot()
@@ -104,13 +118,16 @@ def mpl_make_table(html, dpi=100, figwidth=20, fontsize=22):
         spine.set_visible(False)
 
     ax.tick_params(length=0, labelsize=0)
-    width = min(df.shape[1] * .14, 1)
+    width = min(df.shape[1] * .13, 1)
     left  = (1 - width) / 2 + .03
     if left + width > .9:
         left = .05
         width = .95
         bbox_inches = 'tight'
-        fontsize = 18
+        if len(df.columns) > 7:
+            fontsize = 18
+        else:
+            fontsize = 20
     else:
         bbox_inches = None
     
