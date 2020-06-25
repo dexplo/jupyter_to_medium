@@ -158,6 +158,31 @@
                 </div>
             </fieldset>
 
+            <fieldset class="form-group">
+                <div class="row">
+                  <legend class="col-form-label col-sm-2 pt-0">Table Conversion</legend>
+                  <div class="col-sm-8">
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" type="radio" name="table_conversion" 
+                             id="table_chrome" value="chrome" checked="checked">
+                      <label class="form-check-label" for="table_chrome">
+                        Screenshot with Chrome
+                      </label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" type="radio" name="table_conversion" 
+                             id="table_matplotlib" value="matplotlib">
+                      <label class="form-check-label" for="table_matplotlib">
+                        Matplotlib
+                      </label>
+                    </div>
+                    <small class="form-text text-muted">Medium does not have any nice way to render tables. As a workaround, 
+                        tables will be produced as images either by screenshots from the Chrome browser
+                        or by matplotlib's table function.</small>
+                  </div>
+                </div>
+            </fieldset>
+
 
             <input type="hidden" name="bundler" value="jupyter_to_medium_bundler">
             <input type="hidden" name="app_status" value="waiting">
