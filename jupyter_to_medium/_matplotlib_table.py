@@ -54,8 +54,8 @@ def get_col_widths(df):
         col_len.append(max_len)
         total += max_len
 
-    col_len = [c / total for c in col_len]
-    return col_len
+    col_proportion = [c / total for c in col_len]
+    return col_proportion, col_len
 
 
 def handle_decimal(x, wrap=False, width=12):
@@ -118,7 +118,7 @@ def mpl_make_table(html, dpi=100, figwidth=20, fontsize=23):
         spine.set_visible(False)
 
     ax.tick_params(length=0, labelsize=0)
-    width = min(df.shape[1] * .13, 1)
+    width = min(df.shape[1] * .15, 1)
     left  = (1 - width) / 2 + .03
     if left + width > .9:
         left = .05
@@ -138,10 +138,10 @@ def mpl_make_table(html, dpi=100, figwidth=20, fontsize=23):
                   1: ["#ffffff"] * df.shape[1]}
     cellColours = [color_map[i % 2] for i in range(len(df))]
     rowColours = [c[0] for c in cellColours]
-    colWidths = get_col_widths(df)
+    colWidths, col_len = get_col_widths(df)
     rowLabels = [handle_decimal(str(val), True, wrap_width) for val in df.index.tolist()]
     colLabels = [handle_decimal(str(val), True, wrap_width) for val in df.columns.tolist()]
-    t = ax.table(cellText=cellText, 
+    table = ax.table(cellText=cellText, 
                  cellColours=cellColours,
                  colWidths=colWidths,
                  colLabels=colLabels,
@@ -149,14 +149,27 @@ def mpl_make_table(html, dpi=100, figwidth=20, fontsize=23):
                  rowLabels=rowLabels, 
                  rowColours=rowColours,
                  bbox=[0, 0, 1, 1])
-    t.auto_set_font_size(False)
-    t.set_fontsize(fontsize)
-    for key, cell in t.get_celld().items():
-        cell.set_linewidth(0)
-        cell.set_text_props(fontfamily="Helvetica Neue")
-        if key[0] == 0:
-            cell.set_text_props(size=fontsize * 1, weight='bold')
-    
+    table.auto_set_font_size(False)
+    table.set_fontsize(fontsize)
+    for (row, col), cell in table.get_celld().items():
+        cell.set_lw(0)
+        if row == 0 or col == -1:
+            cell.set_text_props(weight='bold', size=fontsize, family="Helvetica")
+            
+    max_index = 0
+    for val in df.index:
+        length = len(str(val))
+        if length > max_index:
+            max_index = length
+    max_index /= 2
+
+    idx_prop = max_index / sum(col_len)
+    xmin = left - idx_prop * width
+    xmax = left + width
+    y = len(df) / (len(df) + 1)
+    line = ax.hlines(y=y, xmin=xmin, xmax=xmax, color='black', lw=2, transform=fig.transFigure)
+    line.set_clip_on(False)
+
     buffer = io.BytesIO()
     fig.savefig(buffer, bbox_inches=bbox_inches)
     img = crop_image(buffer)
