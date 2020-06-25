@@ -36,6 +36,7 @@ setuptools.setup(
     include_package_data=True,
     data_files=[("etc/jupyter/nbconfig/notebook.d", [
                 "jupyter-config/nbconfig/notebook.d/jupyter_to_medium.json"])],
-    install_requires=['nbconvert', 'requests']
+    install_requires=['nbconvert', 'requests'],
+    extras_require={'matplotlib_conversion': ['matplotlib>=3.1']}
 
     )
