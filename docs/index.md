@@ -5,12 +5,20 @@
 
 Publish Jupyter Notebooks as Medium blog posts directly from your notebook with the help of jupyter_to_medium.
 
+{% macro image(name) %}
+    <div style="text-align: center;">
+        <img src="images/{{ name }}.png">
+    </div>
+{% endmacro %}
+
+<div>{{ image('social_share_small') }}</div>
+
 ## Target User
 
-Do you ....
+Do you...
 
 * Publish blog posts on Medium?
-* Use Jupyter Notebooks to write the bulk of your post?
+* Use Jupyter Notebooks to write your posts?
 * Dislike the time and effort it takes to transfer your posts from Jupyter to Medium?
 
 If so, jupyter_to_medium will automate the process of taking your Jupyter Notebook as is and publishing it as a Medium post in almost no time at all, saving huge amounts of time.
@@ -34,7 +42,7 @@ Before using this package, you must request an integration token from Medium. [R
 
 Once you have your integration token, create the following folder and file in your home directory.
 
-```
+```python
 .jupyter_to_medium/integration_token
 ```
 
@@ -52,7 +60,7 @@ There are three ways to publish notebooks:
 
 After installation, open the notebook you wish to publish and select the option `File -> Deploy as -> Medium Post`
 
-![png](images/menu_option.png)
+<div>{{ image('menu_option') }}</div>
 
 !!! note
     The extension should be automatically activated in your notebook, but if the above command is not found, run the following from your command line.
@@ -61,23 +69,24 @@ After installation, open the notebook you wish to publish and select the option 
 
 A new browser tab will open with a short form that needs to be completed.
 
-![png](images/form.png)
+<div>{{ image('form') }}</div>
 
-After clicking publish, the notebook and all images will be uploaded to Medium. Any HTML tables (such as pandas DataFrames) will be converted to images (via chrome), as Medium has no ability to represent tables. This is a time consuming process, so be prepared to wait. Check your terminal for updates. If successful, you'll get the following response with a link to view the post.
 
-![png](images/success.png)
+After clicking publish, the notebook and all images will be uploaded to Medium. Any HTML tables (such as pandas DataFrames) will be converted to images (via chrome or matplotlib), as Medium has no ability to represent tables. This is a time consuming process, so be prepared to wait. Check your terminal for updates. If successful, you'll get the following response with a link to view the post.
+
+<div>{{ image('success') }}</div>
 
 Click the link to view the post.
 
-![png](images/post.png)
+<div>{{ image('post') }}</div>
 
 ### Finalize and publish on Medium
 
-As of now, your post will be published as a draft. Review and publish the post on Medium.
+Currently, your post will be published as a draft. Review and publish the post on Medium.
 
 ### Publishing to Medium from the Command Line
 
-Upon installation, you'll have access to the command line program `jupyter_to_medium` with the same options as the above function.
+Upon installation, you'll have access to the command line program `jupyter_to_medium` with the same options as the below function.
 
 ```bash
 jupyter_to_medium --pub-name="Dunder Data" --tags="python, data science" "My Awesome Blog Post.ipynb"
@@ -99,7 +108,9 @@ jtm.publish('My Awesome Jupyter Notebook.ipynb',
             license='all-rights-reserved',
             canonical_url=None,
             chrome_path=None,
-            download_markdown=False)
+            save_markdown=False,
+            table_conversion='chrome'
+            )
 ```
 
 If successful, a message will be printed with the URL to your post.  Additionally, JSON data will be returned as a dictionary containing the returned request from Medium.
@@ -108,9 +119,15 @@ If successful, a message will be printed with the URL to your post.  Additionall
 
 If your post is unsuccessful, a message with the error will be printed to the screen with information that might help you solve the issue.
 
+### Table conversion with Chrome or Matplotlib
+
+By default, tables will be converted via Chrome web browser by taking screenshots of them. If you don't have Chrome installed or cannot 
+get chrome to work, select 'matplotlib' for the table conversion.
+
 ## Dependencies
 
 * nbconvert
 * requests
 * pillow (if you have HTML tables)
 * Google Chrome / Brave browser
+* matplotlib (if Chrome browser does not work)

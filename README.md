@@ -5,6 +5,8 @@
 
 Publish Jupyter Notebooks as Medium blog posts directly from your notebook with the help of jupyter_to_medium.
 
+![](docs/images/social_share_small.png)
+
 ## Target User
 
 Do you ....
@@ -72,21 +74,21 @@ Click the link to view the post.
 
 ![png](docs/images/post.png)
 
-#### Finalize and publish on Medium
+### Finalize and publish on Medium
 
-As of now, your post will be published as a draft. Review and publish the post on Medium.
+Currently, your post will be published as a draft. Review and publish the post on Medium.
 
 ### Publishing to Medium from the Command Line
 
-Upon installation, you'll have access to the command line program `jupyter_to_medium` with the same options as the above function.
+Upon installation, you'll have access to the command line program `jupyter_to_medium` with the same options as the below function.
 
 ```bash
-jupyter_to_medium --pub-name="Dunder Data" "My Awesome Blog Post.ipynb"
+jupyter_to_medium --pub-name="Dunder Data" --tags="python, data science" "My Awesome Blog Post.ipynb"
 ```
 
 ### Publishing to Medium with a Python Script
 
-In a separate script/notebook import `juptyer_to_medium` as a module. Pass the `publish` function the location of the Jupyter Notebook you would like to publish as a Medium blog post
+In a separate script/notebook, import `juptyer_to_medium` as a module. Pass the `publish` function the location of the Jupyter Notebook you would like to publish as a Medium blog post.
 
 ```python
 import jupyter_to_medium as jtm
@@ -100,10 +102,21 @@ jtm.publish('My Awesome Jupyter Notebook.ipynb',
             license='all-rights-reserved',
             canonical_url=None,
             chrome_path=None,
-            download_markdown=False)
+            save_markdown=False,
+            table_conversion='chrome'
+            )
 ```
 
-If successful, JSON data will be returned as a dictionary with the URL.
+If successful, a message will be printed with the URL to your post.  Additionally, JSON data will be returned as a dictionary containing the returned request from Medium.
+
+## Troubleshooting
+
+If your post is unsuccessful, a message with the error will be printed to the screen with information that might help you solve the issue.
+
+### Table conversion with Chrome or Matplotlib
+
+By default, tables will be converted via Chrome web browser by taking screenshots of them. If you don't have Chrome installed or cannot 
+get chrome to work, select 'matplotlib' for the table conversion.
 
 ## Dependencies
 
@@ -111,3 +124,4 @@ If successful, JSON data will be returned as a dictionary with the URL.
 * requests
 * pillow (if you have HTML tables)
 * Google Chrome / Brave browser
+* matplotlib (if Chrome browser does not work)
