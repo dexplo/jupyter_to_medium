@@ -99,13 +99,11 @@ class MarkdownPreprocessor(Preprocessor):
         return cell, resources
 
 
-ss_creator = make_repr_png()
-
-
 class NoExecuteDataFramePreprocessor(Preprocessor):
         
     def preprocess_cell(self, cell, resources, index):
         nb_home = Path(resources['metadata']['path'])
+        converter = resources['converter']
         if cell['cell_type'] == 'code':
             outputs = cell.get('outputs', [])
             for output in outputs:
@@ -123,7 +121,7 @@ class NoExecuteDataFramePreprocessor(Preprocessor):
                     if not has_image_mimetype and 'text/html' in output['data']:
                         html = output['data']['text/html']
                         if '</table>' in html and '</style>' in html:
-                            output['data'] = {'image/png': ss_creator(html)}
+                            output['data'] = {'image/png': converter(html)}
                         elif html.startswith('<img src'):
                             pass
                             # maybe necessary if image not embedded with Image(...)

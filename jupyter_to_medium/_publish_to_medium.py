@@ -8,6 +8,7 @@ import nbformat
 from nbconvert.exporters import MarkdownExporter
 
 from ._preprocesors import MarkdownPreprocessor, NoExecuteDataFramePreprocessor
+from ._screenshot import Screenshot
 
 
 class Publish:
@@ -22,7 +23,7 @@ class Publish:
 
     def __init__(self, filename, integration_token, pub_name, title, tags, 
                  publish_status, notify_followers, license, canonical_url,
-                 chrome_path, save_markdown):
+                 chrome_path, save_markdown, table_conversion):
         self.filename = Path(filename)
         self.img_data_json = self.filename.stem + '_image_data.json'
         self.integration_token = self.get_integration_token(integration_token)
@@ -35,6 +36,7 @@ class Publish:
         self.canonical_url = canonical_url
         self.chrome_path = chrome_path
         self.save_markdown = save_markdown
+        self.table_conversion = table_conversion
         self.nb_home = self.filename.parent
         self.image_dir_name = self.title + '_files'
         self.resources = self.get_resources()
@@ -55,6 +57,9 @@ class Publish:
 
         if not isinstance(self.tags, list):
             raise TypeError('Must use a list of strings for the tags and not', self.tags)
+
+        if self.table_conversion not in ('chrome', 'matplotlib'):
+            raise ValueError('`table_version` must be either "chrome" or "matplotlib"')
         
     def get_resources(self):
         resources = {'metadata': {'path': str(self.nb_home), 
@@ -113,7 +118,15 @@ class Publish:
                                   image_dir_name=Path(self.image_dir_name))
         self.nb, self.resources = mp.preprocess(self.nb, self.resources)
 
+        
+        
         no_ex_pp = NoExecuteDataFramePreprocessor()
+        if self.table_conversion == 'chrome':
+            converter = Screenshot(max_rows=30, max_cols=10, ss_width=1400, 
+                                   ss_height=900, resize=1, chrome_path=None).run
+        else:
+            from ._matplotlib_table import mpl_make_table as converter
+        self.resources['converter'] = converter
         self.nb, self.resources = no_ex_pp.preprocess(self.nb, self.resources)
 
         me = MarkdownExporter()
@@ -226,7 +239,7 @@ class Publish:
 def publish(filename, integration_token=None, pub_name=None, title=None, 
             tags=None, publish_status='draft', notify_followers=False, 
             license='all-rights-reserved', canonical_url=None, chrome_path=None,
-            save_markdown=False):
+            save_markdown=False, table_conversion='chrome'):
     '''
     Publish a Jupyter Notebook directly to Medium as a blog post.
 
@@ -285,9 +298,17 @@ def publish(filename, integration_token=None, pub_name=None, title=None,
         Whether or not to save the markdown and corresponding image files. They 
         will be placed in the same folder containing the notebook. The images will be
         in a folder with _files appended to it.
+
+    table_conversion : 'chrome' or 'matplotlib', default 'chrome'
+        Medium does not render tables correctly such as pandas DataFrame.
+        As a workaround, images of the tables will be produced in their place.
+        When 'chrome', a screenshot using the Chrome web browser will be used.
+        When 'matplotlib', the matplotlib table function will be used to
+        produce the table
+        
     '''
     p = Publish(filename, integration_token, pub_name, title, tags, 
                 publish_status, notify_followers, license, canonical_url,
-                chrome_path, save_markdown)
+                chrome_path, save_markdown, table_conversion)
     p.main()
     return p.result

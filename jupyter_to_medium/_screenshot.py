@@ -111,9 +111,15 @@ class Screenshot:
         diff = ImageChops.difference(img_gray, bg)
         diff = ImageChops.add(diff, diff, 2.0, -100)
         bbox = diff.getbbox()
-        new_y_max = bbox[-1] + 10
-        x_max = img.size[0]
-        img = img.crop((0, 0, x_max, new_y_max))
+        x0, y0, x1, y1 = bbox
+        x0 = min(x0, int(img.size[0] * .12))
+        x1 = max(x1, int(img.size[0] * .88))
+
+        x0 = max(0, x0 - 20)
+        x1 = min(img.size[0], x1 + 10)
+        y0 = max(0, y0 - 20)
+        y1 = min(img.size[1], y1 + 10)
+        img = img.crop((x0, y0, x1, y1))
 
         if self.resize != 1:
             w, h = img.size
@@ -130,7 +136,7 @@ class Screenshot:
         return base64.b64encode(buffer.getvalue()).decode()
 
     def run(self, html):
-        buffer = self.take_screenshot(html)
+        buffer = self.take_screenshot(self.css + html)
         
         if importlib.util.find_spec('PIL'):
             img = self.finalize_image(buffer)
@@ -143,11 +149,10 @@ class Screenshot:
 
     def repr_png_wrapper(self):
         def _repr_png_(data):
-            html = self.css + data
-            return self.run(html)
+            return self.run(data)
         return _repr_png_
 
-def make_repr_png(max_rows=30, max_cols=10, ss_width=1000, ss_height=900, 
+def make_repr_png(max_rows=30, max_cols=10, ss_width=1400, ss_height=900, 
                   resize=1, chrome_path=None):
     """
     Creates a function that can be assigned to `pd.DataFrame._repr_png_` 

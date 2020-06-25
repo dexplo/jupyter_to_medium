@@ -18,7 +18,7 @@ def _jupyter_bundlerextension_paths():
 def upload(model, handler):
     arguments = ['title', 'integration_token', 'pub_name', 'tags', 
                 'publish_status', 'notify_followers', 'license', 'canonical_url',
-                'chrome_path', 'save_markdown']
+                'chrome_path', 'save_markdown', 'table_conversion']
 
     kwargs = {arg: handler.get_query_argument(arg, None) for arg in arguments}
     path = model['path']

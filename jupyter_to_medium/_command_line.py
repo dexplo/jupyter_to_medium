@@ -91,6 +91,14 @@ Optional Keyword Arguments
     in a folder with _files appended to it.
     True or False (default: False)
 
+--table-conversion
+    Medium does not render tables correctly such as pandas DataFrame.
+    As a workaround, images of the tables will be produced in their place.
+    When 'chrome', a screenshot using the Chrome web browser will be used.
+    When 'matplotlib', the matplotlib table function will be used to
+    produce the table.
+    Valid values are 'chrome' or 'matplotlib' (default: 'chrome')
+
 
 Examples
 ========
@@ -108,7 +116,7 @@ parser.add_argument('--integration-token', type=str)
 parser.add_argument('--pub-name', type=str)
 parser.add_argument('--title', type=str)
 parser.add_argument('--tags', type=str)
-parser.add_argument('--publish_status', type=str, choices=['draft'], default='draft')
+parser.add_argument('--publish-status', type=str, choices=['draft'], default='draft')
 parser.add_argument('--notify-followers', type=bool, default=False)
 parser.add_argument('--license', type=str, choices=['all-rights-reserved', 'cc-40-by', 
     'cc-40-by-sa', 'cc-40-by-nd', 'cc-40-by-nc', 'cc-40-by-nc-nd', 'cc-40-by-nc-sa', 
@@ -116,6 +124,7 @@ parser.add_argument('--license', type=str, choices=['all-rights-reserved', 'cc-4
 parser.add_argument('--canonical-url', type=str)
 parser.add_argument('--chrome-path', type=str)
 parser.add_argument('--save-markdown', type=bool, default=False)
+parser.add_argument('--table-conversion', type=str, choices=['chrome', 'matplotlib'], default='chrome')
 
 def main():
     if len(sys.argv) == 1 or '-h' in sys.argv or '--help' in sys.argv:
