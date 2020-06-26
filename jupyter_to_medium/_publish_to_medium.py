@@ -148,8 +148,10 @@ class Publish:
                 self.md = self.md.replace(file, new_url)
                 all_json.append(req_json)
         
-        with open(self.nb_home / self.img_data_json, 'w') as f:
-            json.dump(all_json, f, indent=4)
+        # with open(self.nb_home / self.img_data_json, 'w') as f:
+        print('Image Storage Information from Medium')
+        print('-------------------------------------\n')
+        print(json.dumps(all_json, indent=4))
 
     def save(self):
         # save markdown and add extra image files
