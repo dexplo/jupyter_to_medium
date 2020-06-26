@@ -2,6 +2,7 @@ from pathlib import Path
 import json
 import re
 import urllib.parse
+from tempfile import TemporaryDirectory
 
 import requests
 import nbformat
@@ -38,7 +39,7 @@ class Publish:
         self.save_markdown = save_markdown
         self.table_conversion = table_conversion
         self.nb_home = self.filename.parent
-        self.image_dir_name = self.title + '_files'
+        self.image_dir = TemporaryDirectory()
         self.resources = self.get_resources()
         self.nb = self.get_notebook()
         self.headers = self.get_headers()
@@ -64,7 +65,7 @@ class Publish:
     def get_resources(self):
         resources = {'metadata': {'path': str(self.nb_home), 
                                   'name': self.title},
-                     'output_files_dir': self.image_dir_name}
+                     'output_files_dir': self.image_dir.name}
         return resources
 
     def get_notebook(self):
@@ -111,11 +112,7 @@ class Publish:
                          f'Here is the publication data returned from Medium\n\n{data}')
 
     def create_markdown(self):
-        output_dir = self.nb_home / self.image_dir_name
-        if not output_dir.exists():
-            output_dir.mkdir()
-        mp = MarkdownPreprocessor(output_dir=output_dir,
-                                  image_dir_name=Path(self.image_dir_name))
+        mp = MarkdownPreprocessor(image_data_dict={})
         self.nb, self.resources = mp.preprocess(self.nb, self.resources)
 
         no_ex_pp = NoExecuteDataFramePreprocessor()
@@ -129,26 +126,9 @@ class Publish:
 
         me = MarkdownExporter()
         md, self.resources = me.from_notebook_node(self.nb, self.resources)
-        image_data_dict = self.resources['outputs']
-        self.write_output_image_data(image_data_dict)
-        image_data_dict = self.get_image_data(image_data_dict)
+
+        image_data_dict = {**mp.image_data_dict, **self.resources['outputs']}
         return md, image_data_dict
-
-    def write_output_image_data(self, image_data_dict):
-        if self.save_markdown:
-            image_dir = self.nb_home / self.image_dir_name
-            for file, image_data in image_data_dict.items():
-                fn = image_dir / Path(file).name
-                with open(fn, 'wb') as f:
-                    f.write(image_data)
-
-    def get_image_data(self, image_data_dict):
-        image_dir = self.nb_home / self.image_dir_name
-        for file in image_dir.iterdir():
-            data = open(file, 'rb').read()
-            rel_fn = Path(self.image_dir_name) / file.name
-            image_data_dict[str(rel_fn)] = data
-        return image_data_dict
 
     def load_images_to_medium(self):
         all_json = []
@@ -164,26 +144,32 @@ class Publish:
                 try:
                     new_url = req_json['data']['url']
                 except KeyError:
-                    raise ValueError('Problem loading images: ' + r.text)
-                self.md = self.md.replace(urllib.parse.quote(fp.as_posix()), new_url)
+                    raise ValueError('Problem loading image {name}.{extension} to Medium: ' + r.text)
+                self.md = self.md.replace(file, new_url)
                 all_json.append(req_json)
         
-        if self.save_markdown:
-            with open(self.nb_home / self.img_data_json, 'w') as f:
-                json.dump(all_json, f, indent=4)
+        with open(self.nb_home / self.img_data_json, 'w') as f:
+            json.dump(all_json, f, indent=4)
 
-    def save_or_delete(self):
+    def save(self):
         # save markdown and add extra image files
-        # or delete images
+        # otherwise tempdirectory will be deleted
+
         if self.save_markdown:
+            local_image_dir = Path(self.title + '_files')
+            full_path = self.nb_home / local_image_dir
+            if not full_path.exists():
+                full_path.mkdir()
+
+            for file, image_data in self.image_data_dict.items():
+                cur_file = local_image_dir / Path(file).name
+                self.md_save = self.md_save.replace(file, str(cur_file))
+                with open(self.nb_home / cur_file, 'wb') as f:
+                    f.write(image_data)
+
             new_md_filename = self.filename.stem + '_medium.md'
             with open(self.nb_home / new_md_filename, 'w') as f:
-                f.write(self.md)
-        else:
-            image_dir = self.nb_home / self.image_dir_name
-            for file in image_dir.iterdir():
-                file.unlink()
-            image_dir.rmdir()
+                f.write(self.md_save)
 
     def publish_to_medium(self):
         if self.pub_id:
@@ -228,8 +214,9 @@ class Publish:
         self.author_id = self.get_author_id()
         self.pub_id = self.get_pub_id()
         self.md, self.image_data_dict = self.create_markdown()
+        self.md_save = self.md
         self.load_images_to_medium()
-        self.save_or_delete()
+        self.save()
         self.publish_to_medium()
         self.print_results()
         
