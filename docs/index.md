@@ -13,6 +13,10 @@ Publish Jupyter Notebooks as Medium blog posts directly from your notebook with 
 
 <div>{{ image('social_share_small') }}</div>
 
+## Watch the video to learn how jupyter_to_medium works!
+
+<iframe width="600" height="400" src="https://www.youtube.com/embed/lU9jogfXNqE" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
 ## Target User
 
 Do you...
@@ -114,6 +118,10 @@ jtm.publish('My Awesome Jupyter Notebook.ipynb',
 ```
 
 If successful, a message will be printed with the URL to your post.  Additionally, JSON data will be returned as a dictionary containing the returned request from Medium.
+
+## Works for Classic Notebook not Jupyter Lab
+
+Currently, this package only works for the "classic" Jupyter Notebook and is not available in Jupyter Lab. If you have experience making Jupyter Lab extensions, please let me know.
 
 ## Troubleshooting
 

@@ -15,7 +15,7 @@ Do you ....
 * Use Jupyter Notebooks to write your posts?
 * Dislike the time and effort it takes to transfer your posts from Jupyter to Medium?
 
-If so, jupyter_to_medium will automate the process of taking your Jupyter Notebook as is and publishing it as a Medium post in almost no time at all saving huge amounts of time.
+If so, jupyter_to_medium will automate the process of taking your Jupyter Notebook, as is, and publishing it as a Medium post in almost no time at all saving huge amounts of time.
 
 ## Motivation
 
@@ -108,6 +108,10 @@ jtm.publish('My Awesome Jupyter Notebook.ipynb',
 ```
 
 If successful, a message will be printed with the URL to your post.  Additionally, JSON data will be returned as a dictionary containing the returned request from Medium.
+
+## Works for Classic Notebook not Jupyter Lab
+
+Currently, this package only works for the "classic" Jupyter Notebook and is not available in Jupyter Lab. If you have experience making Jupyter Lab extensions, please let me know.
 
 ## Troubleshooting
 
