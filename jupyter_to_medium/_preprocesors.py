@@ -39,26 +39,25 @@ def get_image_tags(md_source):
 
 class MarkdownPreprocessor(Preprocessor):
 
-    output_dir = Instance(klass=PurePath)
-    image_dir_name = Instance(klass=PurePath)
+
+    image_data_dict = Instance(klass=dict)
 
     def preprocess_cell(self, cell, resources, cell_index):
         nb_home = Path(resources['metadata']['path'])
         if cell['cell_type'] == 'markdown':
 
             # find normal markdown images 
+            # can normal images be http?
             all_image_files = get_image_files(cell['source'])
             for i, image_file in enumerate(all_image_files):
                 image_data = open(nb_home / image_file, 'rb').read()
                 ext = Path(image_file).suffix
+                if ext.startswith('.jpg'):
+                    ext = '.jpeg'
                     
                 new_image_name = f'markdown_{cell_index}_normal_image_{i}{ext}'
-                final_image_fn = self.output_dir / new_image_name
-                with open(final_image_fn, 'wb') as f:
-                    f.write(image_data)
-                image_dir = self.image_dir_name / new_image_name
-                replace_str = urllib.parse.quote(str(image_dir))
-                cell['source'] = cell['source'].replace(image_file, replace_str)
+                cell['source'] = cell['source'].replace(image_file, new_image_name)
+                self.image_data_dict[new_image_name] = image_data
 
             # find HTML <img> tags
             all_image_tag_files = get_image_tags(cell['source'])
@@ -68,14 +67,12 @@ class MarkdownPreprocessor(Preprocessor):
                 else:
                     image_data = open(nb_home / src, 'rb').read()
                     ext = Path(src).suffix
+                    if ext.startswith('.jpg'):
+                        ext = '.jpeg'
                     new_image_name = f'markdown_{cell_index}_html_image_tag_{i}{ext}'
-                    final_image_fn = self.output_dir / new_image_name
-                    with open(final_image_fn, 'wb') as f:
-                        f.write(image_data)
-                
-                    image_dir = self.image_dir_name / new_image_name
-                    image_dir = urllib.parse.quote(str(image_dir))
-                    replace_str = f'![]({image_dir})'
+                    replace_str = f'![]({new_image_name})'
+                    # only save non-http tags. http tags will direct link from markdown
+                    self.image_data_dict[new_image_name] = image_data
                     
                 cell['source'] = cell['source'].replace(entire_tag, replace_str)
 
@@ -86,16 +83,13 @@ class MarkdownPreprocessor(Preprocessor):
                 # Though there can be multiple attachments per cell
                 # So, this should only loop once
                 for j, (mime_type, base64_data) in enumerate(data.items()):
-                    ext = '.' + mime_type.split('/')[-1]
-                    new_image_name = f'markdown_{cell_index}_attachment_{i}_{j}{ext}'
-                    final_image_fn = self.output_dir / new_image_name
-                    b64_bytes = base64.b64decode(base64_data)
-                    with open(final_image_fn, 'wb') as f:
-                        f.write(b64_bytes)
-
-                    image_dir = self.image_dir_name / new_image_name
-                    replace_str = urllib.parse.quote(str(image_dir))
-                    cell['source'] = cell['source'].replace(f'attachment:{image_name}', replace_str)
+                    ext = mime_type.split('/')[-1]
+                    if ext == 'jpg':
+                        ext = 'jpeg'
+                    new_image_name = f'markdown_{cell_index}_attachment_{i}_{j}.{ext}'
+                    image_data = base64.b64decode(base64_data)
+                    self.image_data_dict[new_image_name] = image_data
+                    cell['source'] = cell['source'].replace(f'attachment:{image_name}', new_image_name)
         return cell, resources
 
 
