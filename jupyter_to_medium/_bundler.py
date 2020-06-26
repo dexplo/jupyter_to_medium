@@ -36,7 +36,13 @@ def upload(model, handler):
     try:
         data = publish(**kwargs)
     except Exception as e:
-        print(e)
+        import traceback
+        error_name = type(e).__name__
+        error = f'{error_name}: {str(e)}'
+        tb = traceback.format_exc()
+        msg = error + f'\n\n{tb}'
+        print(msg)
+
         data = {'app_status': 'fail', 
                 'error_data': str(e)}
     else:
