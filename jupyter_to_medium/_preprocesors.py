@@ -146,13 +146,6 @@ class NoExecuteDataFramePreprocessor(Preprocessor):
                         if '</table>' in html and '</style>' in html:
                             output['data'] = {'image/png': converter(html)}
                         elif html.startswith('<img src'):
+                            # TODO: Necessary when images from IPython.display module used
                             pass
-                            # maybe necessary if image not embedded with Image(...)
-                            # image_files = get_image_tags(html)
-                            # if image_files:
-                            #     src = nb_home / image_files[0][1]
-                            #     ext = str(src).split('.')[-1].split('?')[0]
-                            #     data = open(src, 'rb').read()
-                            #     data = base64.b64encode(data).decode()
-                            #     output['data'] = {f'image/{ext}': data}
         return cell, resources 
