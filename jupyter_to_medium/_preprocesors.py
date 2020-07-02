@@ -5,11 +5,13 @@ import io
 import re
 import urllib.parse
 
+import mistune
 import requests
 from nbconvert.preprocessors import ExecutePreprocessor, Preprocessor
 from traitlets import Instance, Unicode
 
 from ._screenshot import make_repr_png
+
 
 def get_image_files(md_source):
     '''
@@ -32,10 +34,33 @@ def get_image_files(md_source):
             image_files.append(p)
     return image_files
 
+
+def replace_md_tables(md_source, converter, image_data_dict, cell_index):
+    i = 0
+    table = re.compile(r'^ *\|(.+)\n *\|( *[-:]+[-| :]*)\n((?: *\|.*(?:\n|$))*)\n*', re.M)
+    nptable = re.compile(r'^ *(\S.*\|.*)\n *([-:]+ *\|[-| :]*)\n((?:.*\|.*(?:\n|$))*)\n*', re.M)
+    
+    def md_table_to_image(match):
+        nonlocal i
+        md = match.group()
+        html = mistune.markdown(md, escape=False)
+        image_data = base64.b64decode(converter(html))
+        new_image_name = f'markdown_{cell_index}_table_{i}.png'
+        image_data_dict[new_image_name] = image_data
+        i += 1
+        return f'![]({new_image_name})'
+    
+    # md_source = md_source.replace('<br>', '\n')
+    md_source = nptable.sub(md_table_to_image, md_source)
+    md_source = table.sub(md_table_to_image, md_source)
+    return md_source
+
+
 def get_image_tags(md_source):
     pat_img_tag = r'''(<img.*?[sS][rR][Cc]\s*=\s*['"](.*?)['"].*?/>)'''
     img_tag_files = re.findall(pat_img_tag, md_source)
     return img_tag_files
+
 
 class MarkdownPreprocessor(Preprocessor):
 
@@ -90,6 +115,11 @@ class MarkdownPreprocessor(Preprocessor):
                     image_data = base64.b64decode(base64_data)
                     self.image_data_dict[new_image_name] = image_data
                     cell['source'] = cell['source'].replace(f'attachment:{image_name}', new_image_name)
+
+            # find markdown tables
+            cell['source'] = replace_md_tables(cell['source'], resources['converter'], 
+                                               self.image_data_dict, cell_index)
+            
         return cell, resources
 
 

@@ -42,9 +42,10 @@ def upload(model, handler):
         tb = traceback.format_exc()
         msg = error + f'\n\n{tb}'
         print(msg)
-
+        msg = msg.replace('\n', '<br>')
+        
         data = {'app_status': 'fail', 
-                'error_data': str(e)}
+                'error_data': msg}
     else:
         if 'data' in data:
             data = data['data']

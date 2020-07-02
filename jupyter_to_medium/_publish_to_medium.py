@@ -112,18 +112,20 @@ class Publish:
                          f'Here is the publication data returned from Medium\n\n{data}')
 
     def create_markdown(self):
-        mp = MarkdownPreprocessor(image_data_dict={})
-        self.nb, self.resources = mp.preprocess(self.nb, self.resources)
-
-        no_ex_pp = NoExecuteDataFramePreprocessor()
         if self.table_conversion == 'chrome':
             converter = Screenshot(max_rows=30, max_cols=10, ss_width=1400, 
                                    ss_height=900, resize=1, chrome_path=None).run
         else:
-            from ._matplotlib_table import mpl_make_table as converter
+            from ._matplotlib_table import converter
         self.resources['converter'] = converter
+
+        mp = MarkdownPreprocessor(image_data_dict={})
+        self.nb, self.resources = mp.preprocess(self.nb, self.resources)
+
+        no_ex_pp = NoExecuteDataFramePreprocessor()
         self.nb, self.resources = no_ex_pp.preprocess(self.nb, self.resources)
 
+        # MarkdownExporter converts images to base64 bytes automatically
         me = MarkdownExporter()
         md, self.resources = me.from_notebook_node(self.nb, self.resources)
 
@@ -149,7 +151,7 @@ class Publish:
                 all_json.append(req_json)
         
         # with open(self.nb_home / self.img_data_json, 'w') as f:
-        print('Image Storage Information from Medium')
+        print('\n\nImage Storage Information from Medium')
         print('-------------------------------------\n')
         print(json.dumps(all_json, indent=4))
 
