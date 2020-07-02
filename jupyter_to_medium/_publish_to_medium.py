@@ -167,7 +167,8 @@ class Publish:
 
             for file, image_data in self.image_data_dict.items():
                 cur_file = local_image_dir / Path(file).name
-                self.md_save = self.md_save.replace(file, str(cur_file))
+                str_cur_file = urllib.parse.quote(str(cur_file))
+                self.md_save = self.md_save.replace(file, str_cur_file)
                 with open(self.nb_home / cur_file, 'wb') as f:
                     f.write(image_data)
 
