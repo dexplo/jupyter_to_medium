@@ -53,7 +53,7 @@ centered
 centered2
 
 <p align="center">
-  <img width="460" height="300" src="http://www.fillmurray.com/460/300">
+  <img width="460" height="300" src="docs/images/integration_token.png">
 </p>
 
 ### Save your integration token
