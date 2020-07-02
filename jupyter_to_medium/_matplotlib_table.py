@@ -14,15 +14,16 @@ from matplotlib.backends.backend_agg import RendererAgg
 class TableMaker:
     
     def __init__(self, html):
-        self.original_fontsize = 24
+        self.original_fontsize = 22
         self.fontsize = self.original_fontsize
         self.figwidth = 20
         self.dpi = 100
         self.text_fig = Figure(dpi=self.dpi)
-        self.renderer = RendererAgg(self.figwidth, 4, self.dpi)
+        self.renderer = RendererAgg(20, 4, self.dpi)
         self.rows, self.num_header_rows = self.parse_html(html)
         self.col_widths = self.calculate_col_widths()
         self.row_heights = self.get_row_heights()
+        print(self.row_heights)
         self.fig = self.create_figure()
         
     def parse_html(self, html):
@@ -122,7 +123,7 @@ class TableMaker:
                     cell_max_width = max(cell_max_width, self.get_text_width(text))
                 row_widths.append(cell_max_width)
             all_text_widths.append(row_widths)
-        pad = 10 # number of pixels to pad column width
+        pad = 10 # number of pixels to pad columns with
         return np.array(all_text_widths) + 15
     
     def calculate_col_widths(self):
@@ -227,7 +228,9 @@ class TableMaker:
                 self.fig.add_artist(line)
                 
         w, h = self.fig.get_size_inches()
-        bbox = Bbox([[-.1, y * h], [w + .1, h]])
+        start = self.figwidth * min(x0, .1)
+        end = self.figwidth - start
+        bbox = Bbox([[start - .1, y * h], [end + .1, h]])
         buffer = io.BytesIO()
         self.fig.savefig(buffer, bbox_inches=bbox)
         return base64.b64encode(buffer.getvalue()).decode()
