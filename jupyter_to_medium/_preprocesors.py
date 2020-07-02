@@ -50,7 +50,6 @@ def replace_md_tables(md_source, converter, image_data_dict, cell_index):
         i += 1
         return f'![]({new_image_name})'
     
-    # md_source = md_source.replace('<br>', '\n')
     md_source = nptable.sub(md_table_to_image, md_source)
     md_source = table.sub(md_table_to_image, md_source)
     return md_source
