@@ -2,176 +2,237 @@ import io
 import base64
 import textwrap
 
+from bs4 import BeautifulSoup
+import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
+from matplotlib import patches as mpatches, lines as mlines
+from matplotlib.transforms import Bbox
+from matplotlib.backends.backend_agg import RendererAgg
 
 
-def html_to_df(html):
-    append = False
-
-    try:
-        df_new = pd.read_html(html, index_col=0)[0]
-        append = True
-    except:
-        df_new = pd.read_html(html)[0]
-        
-    if isinstance(df_new.columns, pd.MultiIndex):
-        bottom_level = df_new.columns.get_level_values(-1).tolist()
-
-        # assume that once Unnamed starts end of index
-        idx_names = []
-        for val in bottom_level:
-            if val.startswith('Unnamed:'):
-                break
-            idx_names.append(val)
-            
-        n = len(df_new.columns.levels)
-        m = len(idx_names)
-        col_values = []
-        for i in range(n - 1):
-            col_values.append(df_new.columns.get_level_values(i).tolist()[m:])
-            
-        if len(col_values) == 1:
-            columns = col_values[0]
-        else:
-            columns = pd.MultiIndex.from_tuples([col for col in zip(*col_values)])
-
-        df_new.columns = idx_names + list(range(len(columns)))
-        df_new = df_new.set_index(idx_names, append=append)
-        df_new.columns = columns
-    return df_new
-
-def get_col_widths(df):
-    col_len = []
-    total = 0
-    for col in df.columns:
-        vals = df[col].astype(str)
-        max_len = max(7, len(str(col)))
-        for val in vals:
-            cur_len = len(val)
-            if cur_len > max_len:
-                max_len = cur_len
-        col_len.append(max_len)
-        total += max_len
-
-    col_proportion = [c / total for c in col_len]
-    return col_proportion, col_len
-
-
-def handle_decimal(x, wrap=False, width=12):
-    if wrap:
-        try:
-            return textwrap.fill(x, width, break_long_words=False)
-        except:
-            return textwrap.fill(str(x), width, break_long_words=False)
-    else:
-        vals = str(x).split('.')
-        if len(vals) == 1:
-            return vals[0]
-        else:
-            vals[1] = vals[1][:5]
-            return '.'.join(vals)
-
-
-def get_values(df, wrap_width):
-    for col in df.columns.tolist():
-        wrap = df[col].dtype.kind not in ('i', 'f')
-        df[col] = df[col].apply(handle_decimal, wrap=wrap, width=wrap_width)
-    return df.values.tolist()
-
-
-def crop_image(buffer):
-    from PIL import Image, ImageChops
-    img = Image.open(buffer)
-
-    img_gray = img.convert('L')
-    bg = Image.new('L', img.size, 255)
-    diff = ImageChops.difference(img_gray, bg)
-    diff = ImageChops.add(diff, diff, 2.0, -100)
-    bbox = diff.getbbox()
-
-    x0, y0, x1, y1 = bbox
-    x0 = min(x0, int(img.size[0] * .05))
-    x1 = max(x1, int(img.size[0] * .95))
-
-    x0 = max(0, x0 - 20)
-    x1 = min(img.size[0], x1 + 10)
-    y0 = max(0, y0 - 20)
-    y1 = min(img.size[1], y1 + 10)
-    img = img.crop((x0, y0, x1, y1))
-    return img
-
-
-def save_image(img):
-    buffer = io.BytesIO()
-    img.save(buffer, format="png", quality=95)
-    return buffer
-
-
-def mpl_make_table(html, dpi=100, figwidth=20, fontsize=23):
-    df = html_to_df(html)
-    height = df.shape[0] * 1
-    fig = plt.Figure(dpi=dpi, figsize=(figwidth, height))
-    ax = fig.add_subplot()
-
-    for spine in ax.spines.values(): 
-        spine.set_visible(False)
-
-    ax.tick_params(length=0, labelsize=0)
-    width = min(df.shape[1] * .15, 1)
-    left  = (1 - width) / 2 + .03
-    if left + width > .9:
-        left = .05
-        width = .95
-        bbox_inches = 'tight'
-        if len(df.columns) > 7:
-            fontsize = 18
-        else:
-            fontsize = 20
-    else:
-        bbox_inches = None
+class TableMaker:
     
-    ax.set_position([left, 0, width, 1])
-    wrap_width = 12 + max(0, 10 - df.shape[1]) // 2
-    cellText = get_values(df, wrap_width)
-    color_map = {0: ["#f5f5f5"] * df.shape[1], 
-                  1: ["#ffffff"] * df.shape[1]}
-    cellColours = [color_map[i % 2] for i in range(len(df))]
-    rowColours = [c[0] for c in cellColours]
-    colWidths, col_len = get_col_widths(df)
-    rowLabels = [handle_decimal(str(val), True, wrap_width) for val in df.index.tolist()]
-    colLabels = [handle_decimal(str(val), True, wrap_width) for val in df.columns.tolist()]
-    table = ax.table(cellText=cellText, 
-                 cellColours=cellColours,
-                 colWidths=colWidths,
-                 colLabels=colLabels,
-                 colLoc='right',
-                 rowLabels=rowLabels, 
-                 rowColours=rowColours,
-                 bbox=[0, 0, 1, 1])
-    table.auto_set_font_size(False)
-    table.set_fontsize(fontsize)
-    for (row, col), cell in table.get_celld().items():
-        cell.set_lw(0)
-        if row == 0 or col == -1:
-            cell.set_text_props(weight='bold', size=fontsize, family="Helvetica")
+    def __init__(self, html):
+        self.original_fontsize = 24
+        self.fontsize = self.original_fontsize
+        self.figwidth = 20
+        self.dpi = 100
+        self.text_fig = Figure(dpi=self.dpi)
+        self.renderer = RendererAgg(self.figwidth, 4, self.dpi)
+        self.rows, self.num_header_rows = self.parse_html(html)
+        self.col_widths = self.calculate_col_widths()
+        self.row_heights = self.get_row_heights()
+        self.fig = self.create_figure()
+        
+    def parse_html(self, html):
+        rows, num_header_rows = self.parse_into_rows(html)
+        num_cols = sum(val[-1] for val in rows[0])
+        new_rows = []
+        rowspan = {}
+        for i, row in enumerate(rows):
+            new_row = []
+            col_loc = 0
+            j = 0
+            while col_loc < num_cols:
+                if col_loc in rowspan:
+                    val = rowspan[col_loc]
+                    val[-2] -= 1
+                    cur_col_loc = 0
+                    for _ in range(val[-1]):
+                        cur_col_loc += 1
+                        new_row.append(val[:3])
+                    if val[-2] == 1:
+                        del rowspan[col_loc]
+                    col_loc += cur_col_loc
+                else:
+                    val = row[j]
+                    if val[-2] > 1: # new rowspan detected
+                        rowspan[col_loc] = val
+                    col_loc += val[-1]  # usually 1
+                    for _ in range(val[-1]):
+                        new_row.append(val[:3])
+                    j += 1
+            new_rows.append(new_row)
+        return new_rows, num_header_rows
+    
+    def get_text_align(self, element):
+        style = element.get('style', '').lower()
+        if 'text-align' in style:
+            idx = style.find('text-align')
+            text_align = style[idx + 10:].split(':')[1].strip()
+            for val in ('left', 'right', 'center'):
+                if text_align.startswith(val):
+                    return val
+    
+    def parse_into_rows(self, html):
+        def parse_row(row):
+            values = []
+            rowspan_dict = {}
+            colspan_total = 0
+            row_align = self.get_text_align(row)
+            for el in row.find_all(['td', 'th']):
+                bold = el.name == 'th'
+                colspan = int(el.attrs.get('colspan', 1))
+                rowspan = int(el.attrs.get('rowspan', 1))
+                text_align = self.get_text_align(el) or row_align
+                text = el.get_text()
+                values.append([text, bold, text_align, rowspan, colspan])
+            return values
+
+        soup = BeautifulSoup(html, features="lxml")
+        # get number of columns from first row
+        num_cols = sum(int(el.get('colspan', 1)) for el in soup.find('tr').find_all(['td', 'th']))
+        thead = soup.find('thead')
+        tbody = soup.find('tbody')
+        
+        rows = []
+        if thead:
+            head_rows = thead.find_all('tr')
+            if head_rows:
+                for row in head_rows:
+                    rows.append(parse_row(row))
+            else:
+                rows.append(parse_row(thead))
+                
+        num_header_rows = len(rows)
+        
+        if tbody:
+            for row in tbody.find_all('tr'):
+                rows.append(parse_row(row))
+                
+        if not thead and not tbody:
+            for row in soup.find_all('tr'):
+                rows.append(parse_row(row))
+        return rows, num_header_rows
+    
+    def get_text_width(self, text):
+        fig = self.text_fig
+        t = fig.text(0, 0, text, size=self.fontsize)
+        bbox = t.get_window_extent(renderer=self.renderer)
+        return bbox.width
+    
+    def get_all_text_widths(self, rows):
+        all_text_widths = []
+        for row in rows:
+            row_widths = []
+            for vals in row:
+                cell_max_width = 0
+                for text in vals[0].split('\n'):
+                    cell_max_width = max(cell_max_width, self.get_text_width(text))
+                row_widths.append(cell_max_width)
+            all_text_widths.append(row_widths)
+        pad = 10 # number of pixels to pad column width
+        return np.array(all_text_widths) + 15
+    
+    def calculate_col_widths(self):
+        all_text_widths = self.get_all_text_widths(self.rows)
+        max_col_widths = all_text_widths.max(axis=0)        
+        mult = 1
+        total_width = self.figwidth * self.dpi
+        if sum(max_col_widths) >= total_width:
+            while mult > .5:
+                mult *= .9
+                for idx in np.argsort(-max_col_widths):
+                    col_widths = all_text_widths[:, idx]
+                    rows = self.wrap_col(idx, col_widths, mult)
+                    all_text_widths = self.get_all_text_widths(rows)
+                    max_col_widths = all_text_widths.max(axis=0)
+                    if sum(max_col_widths) < total_width:
+                        break
+                    
+            if mult <= .5 and self.fontsize > 12:
+                self.fontsize *= .9
+                return self.calculate_col_widths()
+            else:
+                self.rows = rows
+                total_width = sum(max_col_widths)
             
-    max_index = 0
-    for val in df.index:
-        length = len(str(val))
-        if length > max_index:
-            max_index = length
-    max_index /= 2
+        col_prop = [width / total_width for width in max_col_widths]
+        return col_prop
 
-    idx_prop = max_index / sum(col_len)
-    xmin = left - idx_prop * width
-    xmax = left + width
-    y = len(df) / (len(df) + 1)
-    line = ax.hlines(y=y, xmin=xmin, xmax=xmax, color='black', lw=2, transform=fig.transFigure)
-    line.set_clip_on(False)
+    def wrap_col(self, idx, col_widths, mult):
+        rows = self.rows.copy()
+        max_width = max(col_widths)
+        texts = [row[idx][0] for row in self.rows]
+        new_texts = []
+        new_max_width = 0
+        for i, (text, col_width) in enumerate(zip(texts, col_widths)):
+            if col_width > mult * max_width and len(text) > 10:
+                width = max(10, int(len(text) * mult))
+                new_text = textwrap.fill(text, width, break_long_words=False)
+                new_texts.append(new_text)
+                new_max_width = max(new_max_width, self.get_text_width(new_text))
+            else:
+                new_texts.append(text)
 
-    buffer = io.BytesIO()
-    fig.savefig(buffer, bbox_inches=bbox_inches)
-    img = crop_image(buffer)
-    buffer = save_image(img)
-    return base64.b64encode(buffer.getvalue()).decode()
+        if new_max_width < max_width:
+            for row, text in zip(rows, new_texts):
+                row[idx][0] = text
+        return rows
+    
+    def get_row_heights(self):
+        row_heights = []
+        for row in self.rows:
+            row_count = max([val[0].count('\n') + 1 for val in row])
+            height = (row_count + 1) * self.fontsize / 72
+            row_heights.append(height)
+            
+        return row_heights
+    
+    def create_figure(self):
+        figheight = sum(self.row_heights)
+        fig = Figure(dpi=self.dpi, figsize=(self.figwidth, figheight))
+        return fig
+        
+    def print_table(self):
+        row_colors = ["#f5f5f5", "#ffffff"]
+        total_width = sum(self.col_widths)
+        figheight = self.fig.get_figheight()
+        row_locs = [height / figheight for height in self.row_heights]
+            
+        header_text_align = [vals[2] for vals in self.rows[0]]
+        x0 = (1 - total_width) / 2
+        x = x0
+        yd = row_locs[0]
+        y = 1
+            
+        for i, (yd, row) in enumerate(zip(row_locs, self.rows)):
+            x = x0
+            y -= yd
+            for j, (xd, val) in enumerate(zip(self.col_widths, row)):
+                text = val[0]
+                weight = 'bold' if val[1] else None
+                ha = val[2] or header_text_align[j] or 'right'
+
+                if ha == 'right':
+                    x += xd
+                elif ha == 'center':
+                    x += xd / 2
+                self.fig.text(x, y + yd / 2, text, family='Helvetica', 
+                              size=self.fontsize, ha=ha, va='center', weight=weight)
+                if ha == 'left':
+                    x += xd
+                elif ha == 'center':
+                    x += xd / 2
+                
+            diff = i - self.num_header_rows
+            if diff >= 0 and  diff % 2 == 0:
+                p = mpatches.Rectangle((x0, y), width=total_width, height=yd, fill=True, 
+                                       color='#f5f5f5', transform=self.fig.transFigure)
+                self.fig.add_artist(p)  
+                
+            if i == self.num_header_rows - 1:
+                line = mlines.Line2D([x0, x0 + total_width], [y, y], color='black')
+                self.fig.add_artist(line)
+                
+        w, h = self.fig.get_size_inches()
+        bbox = Bbox([[-.1, y * h], [w + .1, h]])
+        buffer = io.BytesIO()
+        self.fig.savefig(buffer, bbox_inches=bbox)
+        return base64.b64encode(buffer.getvalue()).decode()
+
+
+def converter(html):
+    tm = TableMaker(html)
+    return tm.print_table()
