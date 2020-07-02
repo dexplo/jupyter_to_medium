@@ -23,7 +23,6 @@ class TableMaker:
         self.rows, self.num_header_rows = self.parse_html(html)
         self.col_widths = self.calculate_col_widths()
         self.row_heights = self.get_row_heights()
-        print(self.row_heights)
         self.fig = self.create_figure()
         
     def parse_html(self, html):
@@ -237,5 +236,6 @@ class TableMaker:
 
 
 def converter(html):
+    html = html.replace('<br>', '\n')
     tm = TableMaker(html)
     return tm.print_table()
