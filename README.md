@@ -44,6 +44,10 @@ Once your request to create integration tokens is accepted, navigate to <a href=
 
 ![png](docs/images/integration_token.png)
 
+centered
+
+<img align="center" src="docs/images/integration_token.png">
+
 ### Save your integration token
 
 Once you have your integration token, create the folder and file `.jupyter_to_medium/integration_token` in your home directory and save the token there. If you don't save it, you'll need to access it every time you wish to make a new post.
