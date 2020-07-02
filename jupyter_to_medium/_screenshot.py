@@ -8,6 +8,9 @@ import io
 import importlib
 import warnings
 
+import numpy as np
+from matplotlib import image as mimage
+
 
 def get_system():
     system = platform.system().lower()
@@ -103,48 +106,30 @@ class Screenshot:
         return buffer
 
     def finalize_image(self, buffer):
-        from PIL import Image, ImageChops
+        img = mimage.imread(buffer)
+        img2d = img.mean(axis=2) == 1
+        all_white = img2d.all(axis=0)
+        diff = np.diff(all_white)
+        left = diff.argmax()
+        right = diff[::-1].argmax()
+        max_crop = int(img.shape[1] * .15)
+        left = min(left, max_crop)
+        right = -min(right, max_crop)
 
-        img = Image.open(buffer)
-        img_gray = img.convert('L')
-        bg = Image.new('L', img.size, 255)
-        diff = ImageChops.difference(img_gray, bg)
-        diff = ImageChops.add(diff, diff, 2.0, -100)
-        bbox = diff.getbbox()
-        x0, y0, x1, y1 = bbox
-        x0 = min(x0, int(img.size[0] * .12))
-        x1 = max(x1, int(img.size[0] * .88))
+        all_white = img2d.all(axis=1)
+        diff = np.diff(all_white)
+        top = diff.argmax()
+        bottom = -diff[::-1].argmax()
+        new_img = img[top:bottom, left:right]
 
-        x0 = max(0, x0 - 20)
-        x1 = min(img.size[0], x1 + 10)
-        y0 = max(0, y0 - 20)
-        y1 = min(img.size[1], y1 + 10)
-        img = img.crop((x0, y0, x1, y1))
-
-        if self.resize != 1:
-            w, h = img.size
-            w, h = int(w // self.resize), int(h // self.resize)
-            img = img.resize((w, h), Image.ANTIALIAS)
-        return img
-
-    def save_image(self, img):
         buffer = io.BytesIO()
-        img.save(buffer, format="png", quality=95)
-        return buffer
-
-    def get_base64_image_str(self, buffer):
-        return base64.b64encode(buffer.getvalue()).decode()
+        mimage.imsave(buffer, new_img)
+        img_str = base64.b64encode(buffer.getvalue()).decode()
+        return img_str
 
     def run(self, html):
         buffer = self.take_screenshot(self.css + html)
-        
-        if importlib.util.find_spec('PIL'):
-            img = self.finalize_image(buffer)
-            buffer = self.save_image(img)
-        else:
-            warnings.warn('The pillow library is not installed. Unable to crop table images. '
-                          'Install it so that the white space around tables gets removed.')
-        img_str = self.get_base64_image_str(buffer)
+        img_str = self.finalize_image(buffer)
         return img_str
 
     def repr_png_wrapper(self):
