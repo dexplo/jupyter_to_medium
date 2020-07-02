@@ -44,9 +44,17 @@ Once your request to create integration tokens is accepted, navigate to <a href=
 
 ![png](docs/images/integration_token.png)
 
+
+
 centered
 
 <img align="center" src="docs/images/integration_token.png">
+
+centered2
+
+<p align="center">
+  <img width="460" height="300" src="http://www.fillmurray.com/460/300">
+</p>
 
 ### Save your integration token
 
