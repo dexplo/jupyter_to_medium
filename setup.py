@@ -35,5 +35,5 @@ setuptools.setup(
     include_package_data=True,
     data_files=[("etc/jupyter/nbconfig/notebook.d", [
                 "jupyter-config/nbconfig/notebook.d/jupyter_to_medium.json"])],
-    install_requires=['nbconvert', 'requests', 'matplotlib>=3.1', 'numpy'],
+    install_requires=['nbconvert', 'requests', 'matplotlib>=3.1', 'numpy', 'beautifulsoup4'],
     )
