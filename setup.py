@@ -6,7 +6,6 @@ with open('jupyter_to_medium/__init__.py', 'r') as f:
         if line.startswith('__version__'):
             version = line.split("'")[1]
 
-
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
@@ -36,7 +35,5 @@ setuptools.setup(
     include_package_data=True,
     data_files=[("etc/jupyter/nbconfig/notebook.d", [
                 "jupyter-config/nbconfig/notebook.d/jupyter_to_medium.json"])],
-    install_requires=['nbconvert', 'requests'],
-    extras_require={'matplotlib_conversion': ['matplotlib>=3.1']}
-
+    install_requires=['nbconvert', 'requests', 'matplotlib>=3.1', 'numpy'],
     )

@@ -1,12 +1,10 @@
 import platform
-from pathlib import Path
 import shutil
-from tempfile import TemporaryDirectory
-from subprocess import run
+import subprocess
 import base64
 import io
-import importlib
-import warnings
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 import numpy as np
 from matplotlib import image as mimage
@@ -100,7 +98,7 @@ class Screenshot:
             f"--screenshot={str(temp_img)}",
             str(temp_html),
         ]
-        run(executable=self.chrome_path, args=args)
+        subprocess.run(executable=self.chrome_path, args=args)
         img_bytes = open(temp_img, 'rb').read()
         buffer = io.BytesIO(img_bytes)
         return buffer
