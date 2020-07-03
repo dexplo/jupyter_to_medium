@@ -10,8 +10,6 @@ import requests
 from nbconvert.preprocessors import ExecutePreprocessor, Preprocessor
 from traitlets import Instance, Unicode
 
-from ._screenshot import make_repr_png
-
 
 def get_image_files(md_source):
     '''
