@@ -1,4 +1,4 @@
-from pathlib import Path, PurePath
+from pathlib import Path
 from tempfile import TemporaryDirectory
 import base64
 import io
@@ -8,7 +8,6 @@ import urllib.parse
 import mistune
 import requests
 from nbconvert.preprocessors import ExecutePreprocessor, Preprocessor
-from traitlets import Instance, Unicode
 
 
 def get_image_files(md_source):
@@ -62,10 +61,9 @@ def get_image_tags(md_source):
 class MarkdownPreprocessor(Preprocessor):
 
 
-    image_data_dict = Instance(klass=dict)
-
     def preprocess_cell(self, cell, resources, cell_index):
         nb_home = Path(resources['metadata']['path'])
+        image_data_dict = resources['image_data_dict']
         if cell['cell_type'] == 'markdown':
 
             # find normal markdown images 
@@ -79,7 +77,7 @@ class MarkdownPreprocessor(Preprocessor):
                     
                 new_image_name = f'markdown_{cell_index}_normal_image_{i}{ext}'
                 cell['source'] = cell['source'].replace(image_file, new_image_name)
-                self.image_data_dict[new_image_name] = image_data
+                image_data_dict[new_image_name] = image_data
 
             # find HTML <img> tags
             all_image_tag_files = get_image_tags(cell['source'])
@@ -94,7 +92,7 @@ class MarkdownPreprocessor(Preprocessor):
                     new_image_name = f'markdown_{cell_index}_html_image_tag_{i}{ext}'
                     replace_str = f'![]({new_image_name})'
                     # only save non-http tags. http tags will direct link from markdown
-                    self.image_data_dict[new_image_name] = image_data
+                    image_data_dict[new_image_name] = image_data
                     
                 cell['source'] = cell['source'].replace(entire_tag, replace_str)
 
@@ -110,12 +108,12 @@ class MarkdownPreprocessor(Preprocessor):
                         ext = 'jpeg'
                     new_image_name = f'markdown_{cell_index}_attachment_{i}_{j}.{ext}'
                     image_data = base64.b64decode(base64_data)
-                    self.image_data_dict[new_image_name] = image_data
+                    image_data_dict[new_image_name] = image_data
                     cell['source'] = cell['source'].replace(f'attachment:{image_name}', new_image_name)
 
             # find markdown tables
             cell['source'] = replace_md_tables(cell['source'], resources['converter'], 
-                                               self.image_data_dict, cell_index)
+                                               image_data_dict, cell_index)
             
         return cell, resources
 

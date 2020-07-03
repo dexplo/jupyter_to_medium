@@ -1,8 +1,8 @@
-from pathlib import Path
 import json
 import re
 import urllib.parse
 from tempfile import TemporaryDirectory
+from pathlib import Path
 
 import requests
 import nbformat
@@ -118,8 +118,9 @@ class Publish:
         else:
             from ._matplotlib_table import converter
         self.resources['converter'] = converter
+        self.resources['image_data_dict'] = {}
 
-        mp = MarkdownPreprocessor(image_data_dict={})
+        mp = MarkdownPreprocessor()
         self.nb, self.resources = mp.preprocess(self.nb, self.resources)
 
         no_ex_pp = NoExecuteDataFramePreprocessor()
@@ -129,7 +130,7 @@ class Publish:
         me = MarkdownExporter()
         md, self.resources = me.from_notebook_node(self.nb, self.resources)
 
-        image_data_dict = {**mp.image_data_dict, **self.resources['outputs']}
+        image_data_dict = {**self.resources['image_data_dict'], **self.resources['outputs']}
         return md, image_data_dict
 
     def load_images_to_medium(self):
