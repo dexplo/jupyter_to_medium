@@ -9,6 +9,8 @@ from tempfile import TemporaryDirectory
 import numpy as np
 from matplotlib import image as mimage
 
+MAX_CROP = .25
+
 
 def get_system():
     system = platform.system().lower()
@@ -71,7 +73,7 @@ class Screenshot:
         self.center_df = center_df
         self.max_rows = max_rows
         self.max_cols = max_cols
-        self.ss_width = 1000
+        self.ss_width = 1200
         self.ss_height = 900
         self.chrome_path = get_chrome_path(chrome_path)
         self.css = self.get_css(fontsize)
@@ -126,12 +128,12 @@ class Screenshot:
         all_white_vert = img2d.all(axis=0)
         # must be all white for 30 pixels in a row to trigger stop
         if all_white_vert[-30:].sum() != 30:
-            self.ss_width = int(self.ss_width * 1.5)
+            self.ss_width = int(self.ss_width * 1.2)
             enlarge = True
 
         all_white_horiz = img2d.all(axis=1)
         if all_white_horiz[-30:].sum() != 30:
-            self.ss_height = int(self.ss_height * 1.5)
+            self.ss_height = int(self.ss_height * 1.2)
             enlarge = True
             
         if enlarge:
@@ -144,10 +146,10 @@ class Screenshot:
         left = diff_vert.argmax()
         right = -diff_vert[::-1].argmax()
         if self.limit_crop:
-            max_crop = int(img.shape[1] * .15)
+            max_crop = int(img.shape[1] * MAX_CROP)
             left = min(left, max_crop)
             right = max(right, -max_crop)
-
+            
         diff_horiz = np.diff(all_white_horiz)
         top = diff_horiz.argmax()
         bottom = -diff_horiz[::-1].argmax()
