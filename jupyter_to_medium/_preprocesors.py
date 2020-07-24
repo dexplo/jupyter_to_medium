@@ -35,7 +35,7 @@ def get_image_files(md_source, only_http=False):
     return image_files
 
 
-def replace_md_tables(md_source, converter, cell_index):
+def replace_md_tables(image_data_dict, md_source, converter, cell_index):
     i = 0
     table = re.compile(r'^ *\|(.+)\n *\|( *[-:]+[-| :]*)\n((?: *\|.*(?:\n|$))*)\n*', re.M)
     nptable = re.compile(r'^ *(\S.*\|.*)\n *([-:]+ *\|[-| :]*)\n((?:.*\|.*(?:\n|$))*)\n*', re.M)
@@ -116,7 +116,8 @@ class MarkdownPreprocessor(Preprocessor):
                     cell['source'] = cell['source'].replace(f'attachment:{image_name}', new_image_name)
 
             # find markdown tables
-            cell['source'] = replace_md_tables(cell['source'], resources['converter'], cell_index)
+            cell['source'] = replace_md_tables(image_data_dict, cell['source'], 
+                                               resources['converter'], cell_index)
             
         return cell, resources
 
