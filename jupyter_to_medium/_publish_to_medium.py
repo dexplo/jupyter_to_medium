@@ -44,7 +44,6 @@ class Publish:
         self.headers = self.get_headers()
         self.validate_args()
 
-
     def validate_args(self):
         if self.publish_status != 'draft':
             raise ValueError('Only "draft" is allowed as a publish status for now')
@@ -64,7 +63,7 @@ class Publish:
     def get_resources(self):
         if self.table_conversion == 'chrome':
             from ._screenshot import Screenshot
-            converter = Screenshot(center_df=True, fontsize=20, chrome_path=self.chrome_path).run
+            converter = Screenshot(center_df=True, fontsize=14, chrome_path=self.chrome_path).run
         else:
             from ._matplotlib_table import TableMaker
             converter = TableMaker(fontsize=22).run
@@ -126,6 +125,9 @@ class Publish:
         no_ex_pp.preprocess(self.nb, self.resources)
 
         # MarkdownExporter converts images to base64 bytes automatically
+        # MarkdownExporter deep copies resources and fails when matplotlib
+        # must remove converter key to not error
+        self.resources.pop('converter') 
         me = MarkdownExporter()
         md, self.resources = me.from_notebook_node(self.nb, self.resources)
 
@@ -239,7 +241,7 @@ def publish(filename, integration_token=None, pub_name=None, title=None,
         Location of Jupyter Notebook to publish to Medium.
 
     integration_token : str, default None
-        When `None`, the integration token must be stored in a file
+        When None, the integration token must be stored in a file
         located in the users home directory at 
         '.jupyter_to_medium/integration_token'. You'll need to create 
         this directory and file first and paste your token there.
@@ -249,18 +251,18 @@ def publish(filename, integration_token=None, pub_name=None, title=None,
         Learn how to get an integration token from Medium.
         https://github.com/Medium/medium-api-docs
     
-    pub_name : str, default `None`
+    pub_name : str, default None
         Name of Medium publication. Not necessary if publishing as a user.
         
-    title : str, default `None`
+    title : str, default None
         This title is used for SEO and when rendering the post as a listing, 
         but will not appear in the actual post. Use the first cell of the 
         notebook with an H1 markdown header for the title. 
         i.e. # My Actual Blog Post Title 
     
-        Leave as `None` to use the filename as this title
+        Leave as None to use the filename as this title
     
-    tags : list of strings, default `None`
+    tags : list of strings, default None
         List of tags to classify the post. Only the first five will be used. 
         Tags longer than 25 characters will be ignored.
     
@@ -276,11 +278,11 @@ def publish(filename, integration_token=None, pub_name=None, title=None,
         'cc-40-by-sa', 'cc-40-by-nd', 'cc-40-by-nc', 'cc-40-by-nc-nd', 'cc-40-by-nc-sa', 
         'cc-40-zero', 'public-domain'. The default is 'all-rights-reserved'.
     
-    canonical_url : str, default `None`
+    canonical_url : str, default None
         A URL of the original home of this content, if it was originally 
         published elsewhere.
 
-    chrome_path : str, default `None`
+    chrome_path : str, default None
         Path to your machine's chrome executable. By default, it is 
         automatically found. Use this when chrome is not automatically found.
 
@@ -302,3 +304,4 @@ def publish(filename, integration_token=None, pub_name=None, title=None,
                 chrome_path, save_markdown, table_conversion)
     p.main()
     return p.result
+    
