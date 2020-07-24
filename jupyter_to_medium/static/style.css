@@ -1,19 +1,22 @@
-table {
+table {{
     background-color: transparent;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    margin-left:auto;
-    margin-right:auto;
     border:none;
     border-collapse: collapse;
     border-spacing:0;
     color:black;
-    font-size:18px;
+    font-size:{fontsize}px;
     table-layout:fixed;
-    }
-thead {
-    border-bottom:1px solid black;vertical-align:bottom;
-    }
-tr, th, td {
+    grid-column: 1;
+    grid-row: 1;
+    }}
+
+thead {{
+    border-bottom:1px solid black;
+    vertical-align:bottom;
+    }}
+
+tr, th, td {{
     text-align:right;
     vertical-align: middle;
     padding:0.5em 0.5em;
@@ -21,14 +24,26 @@ tr, th, td {
     white-space:normal;
     max-width:none;
     border:none;
-    }
-th {
+    }}
+
+th {{
     font-weight:bold; 
     text-align:left;
-    }
-tbody tr:nth-child(odd){
+    }}
+
+tbody tr:nth-child(odd){{
     background:#f5f5f5;
-    }
-    :link{
+    }}
+    :link{{
     text-decoration:underline;
-}
+}}
+
+div {{
+    display: grid;
+    justify-content: {justify};
+}}
+
+p {{
+  grid-column: 1;
+  grid-row: 2;
+}}
