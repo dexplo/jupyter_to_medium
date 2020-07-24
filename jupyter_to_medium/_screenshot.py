@@ -9,7 +9,7 @@ from tempfile import TemporaryDirectory
 import numpy as np
 from matplotlib import image as mimage
 
-MAX_CROP = .25
+MAX_CROP = .22
 
 
 def get_system():
