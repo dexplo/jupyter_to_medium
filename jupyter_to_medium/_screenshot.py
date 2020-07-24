@@ -71,7 +71,7 @@ class Screenshot:
         self.center_df = center_df
         self.max_rows = max_rows
         self.max_cols = max_cols
-        self.ss_width = 1400
+        self.ss_width = 1000
         self.ss_height = 900
         self.chrome_path = get_chrome_path(chrome_path)
         self.css = self.get_css(fontsize)
