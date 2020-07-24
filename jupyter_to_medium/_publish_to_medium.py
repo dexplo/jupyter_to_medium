@@ -39,7 +39,6 @@ class Publish:
         self.save_markdown = save_markdown
         self.table_conversion = table_conversion
         self.nb_home = self.filename.parent
-        self.image_dir = TemporaryDirectory()
         self.resources = self.get_resources()
         self.nb = self.get_notebook()
         self.headers = self.get_headers()
@@ -63,9 +62,17 @@ class Publish:
             raise ValueError('`table_version` must be either "chrome" or "matplotlib"')
         
     def get_resources(self):
+        if self.table_conversion == 'chrome':
+            from ._screenshot import Screenshot
+            converter = Screenshot(center_df=True, chrome_path=self.chrome_path).run
+        else:
+            from ._matplotlib_table import TableMaker
+            converter = TableMaker(fontsize=22).run
+
         resources = {'metadata': {'path': str(self.nb_home), 
                                   'name': self.title},
-                     'output_files_dir': self.image_dir.name}
+                     'converter': converter,
+                     'image_data_dict': {}}
         return resources
 
     def get_notebook(self):
@@ -112,19 +119,11 @@ class Publish:
                          f'Here is the publication data returned from Medium\n\n{data}')
 
     def create_markdown(self):
-        if self.table_conversion == 'chrome':
-            converter = Screenshot(max_rows=30, max_cols=10, ss_width=1400, 
-                                   ss_height=900, resize=1, chrome_path=None).run
-        else:
-            from ._matplotlib_table import converter
-        self.resources['converter'] = converter
-        self.resources['image_data_dict'] = {}
-
         mp = MarkdownPreprocessor()
-        self.nb, self.resources = mp.preprocess(self.nb, self.resources)
+        mp.preprocess(self.nb, self.resources)
 
         no_ex_pp = NoExecuteDataFramePreprocessor()
-        self.nb, self.resources = no_ex_pp.preprocess(self.nb, self.resources)
+        no_ex_pp.preprocess(self.nb, self.resources)
 
         # MarkdownExporter converts images to base64 bytes automatically
         me = MarkdownExporter()
