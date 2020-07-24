@@ -64,7 +64,7 @@ class Publish:
     def get_resources(self):
         if self.table_conversion == 'chrome':
             from ._screenshot import Screenshot
-            converter = Screenshot(center_df=True, chrome_path=self.chrome_path).run
+            converter = Screenshot(center_df=True, fontsize=20, chrome_path=self.chrome_path).run
         else:
             from ._matplotlib_table import TableMaker
             converter = TableMaker(fontsize=22).run
