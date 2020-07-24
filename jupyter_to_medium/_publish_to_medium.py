@@ -1,7 +1,5 @@
 import json
-import re
 import urllib.parse
-from tempfile import TemporaryDirectory
 from pathlib import Path
 
 import requests
@@ -152,7 +150,6 @@ class Publish:
                 self.md = self.md.replace(file, new_url)
                 all_json.append(req_json)
         
-        # with open(self.nb_home / self.img_data_json, 'w') as f:
         print('\n\nImage Storage Information from Medium')
         print('-------------------------------------\n')
         print(json.dumps(all_json, indent=4))
@@ -292,11 +289,11 @@ def publish(filename, integration_token=None, pub_name=None, title=None,
         in a folder with _files appended to it.
 
     table_conversion : 'chrome' or 'matplotlib', default 'chrome'
-        Medium does not render tables correctly such as pandas DataFrame.
+        Medium does not render tables correctly such as pandas DataFrames.
         As a workaround, images of the tables will be produced in their place.
         When 'chrome', a screenshot using the Chrome web browser will be used.
         When 'matplotlib', the matplotlib table function will be used to
-        produce the table
+        produce the table.
         
     '''
     p = Publish(filename, integration_token, pub_name, title, tags, 
@@ -304,4 +301,3 @@ def publish(filename, integration_token=None, pub_name=None, title=None,
                 chrome_path, save_markdown, table_conversion)
     p.main()
     return p.result
-    
