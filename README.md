@@ -44,7 +44,6 @@ Once your request to create integration tokens is accepted, navigate to <a href=
 
 ![png](docs/images/integration_token.png)
 
-
 ### Save your integration token
 
 Once you have your integration token, create the folder and file `.jupyter_to_medium/integration_token` in your home directory and save the token there. If you don't save it, you'll need to access it every time you wish to make a new post.
@@ -127,6 +126,6 @@ get chrome to work, select 'matplotlib' for the table conversion.
 
 * nbconvert
 * requests
-* pillow (if you have HTML tables)
 * Google Chrome / Brave browser
-* matplotlib (if Chrome browser does not work)
+* matplotlib (for cropping images and if Chrome browser does not work)
+* BeautifulSoup (For parsing markdown tables)
