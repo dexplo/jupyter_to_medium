@@ -38,6 +38,10 @@ I've [published dozens of blog posts on Medium][0] myself, all of them beginning
 
 `pip install jupyter_to_medium`
 
+or
+
+`conda install -c conda-forge jupyter_to_medium`
+
 ## Get an Integration Token from Medium
 
 Before using this package, you must request an integration token from Medium. [Read the instructions here on how to get your integration token](https://github.com/Medium/medium-api-docs).
@@ -136,6 +140,5 @@ get chrome to work, select 'matplotlib' for the table conversion.
 
 * nbconvert
 * requests
-* pillow (if you have HTML tables)
 * Google Chrome / Brave browser
 * matplotlib (if Chrome browser does not work)
