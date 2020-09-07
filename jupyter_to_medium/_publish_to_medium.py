@@ -73,9 +73,7 @@ class Publish:
         return resources
 
     def get_notebook(self):
-        with open(self.filename) as f:
-            nb = nbformat.read(f, as_version=4)
-        return nb
+        return nbformat.read(self.filename, as_version=4)
 
     def get_integration_token(self, it):
         if not it:
