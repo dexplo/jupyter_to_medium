@@ -6,6 +6,7 @@ import requests
 import nbformat
 from nbconvert.exporters import MarkdownExporter
 
+from ._postprocessors import gistPostprocessor
 from ._preprocesors import MarkdownPreprocessor, NoExecuteDataFramePreprocessor
 from ._screenshot import Screenshot
 
@@ -13,16 +14,15 @@ from ._screenshot import Screenshot
 class Publish:
 
     AUTHOR_URL = "https://api.medium.com/v1/me"
-    PUB_URL    = "https://api.medium.com/v1/users/{author_id}/publications"
-    IMAGE_URL  = "https://api.medium.com/v1/images"
+    PUB_URL = "https://api.medium.com/v1/users/{author_id}/publications"
+    IMAGE_URL = "https://api.medium.com/v1/images"
     USER_POST_URL = "https://api.medium.com/v1/users/{author_id}/posts"
     PUB_POST_URL = "https://api.medium.com/v1/publications/{pub_id}/posts"
     IMAGE_TYPES = {'png', 'gif', 'jpeg', 'jpg', 'tiff'}
-    
 
-    def __init__(self, filename, integration_token, pub_name, title, tags, 
+    def __init__(self, filename, integration_token, pub_name, title, tags,
                  publish_status, notify_followers, license, canonical_url,
-                 chrome_path, save_markdown, table_conversion):
+                 chrome_path, save_markdown, table_conversion, gistify):
         self.filename = Path(filename)
         self.img_data_json = self.filename.stem + '_image_data.json'
         self.integration_token = self.get_integration_token(integration_token)
@@ -36,6 +36,7 @@ class Publish:
         self.chrome_path = chrome_path
         self.save_markdown = save_markdown
         self.table_conversion = table_conversion
+        self.gistify = gistify
         self.nb_home = self.filename.parent
         self.resources = self.get_resources()
         self.nb = self.get_notebook()
@@ -44,29 +45,33 @@ class Publish:
 
     def validate_args(self):
         if self.publish_status != 'draft':
-            raise ValueError('Only "draft" is allowed as a publish status for now')
+            raise ValueError(
+                'Only "draft" is allowed as a publish status for now')
 
-        licenses = ['all-rights-reserved', 'cc-40-by', 'cc-40-by-sa', 'cc-40-by-nd', 
-                    'cc-40-by-nc', 'cc-40-by-nc-nd', 'cc-40-by-nc-sa', 'cc-40-zero', 
+        licenses = ['all-rights-reserved', 'cc-40-by', 'cc-40-by-sa', 'cc-40-by-nd',
+                    'cc-40-by-nc', 'cc-40-by-nc-nd', 'cc-40-by-nc-sa', 'cc-40-zero',
                     'public-domain']
         if self.license not in licenses:
             raise ValueError('License must be one of', licenses)
 
         if not isinstance(self.tags, list):
-            raise TypeError('Must use a list of strings for the tags and not', self.tags)
+            raise TypeError(
+                'Must use a list of strings for the tags and not', self.tags)
 
         if self.table_conversion not in ('chrome', 'matplotlib'):
-            raise ValueError('`table_version` must be either "chrome" or "matplotlib"')
-        
+            raise ValueError(
+                '`table_version` must be either "chrome" or "matplotlib"')
+
     def get_resources(self):
         if self.table_conversion == 'chrome':
             from ._screenshot import Screenshot
-            converter = Screenshot(center_df=True, fontsize=14, chrome_path=self.chrome_path).run
+            converter = Screenshot(
+                center_df=True, fontsize=14, chrome_path=self.chrome_path).run
         else:
             from ._matplotlib_table import TableMaker
             converter = TableMaker(fontsize=22).run
 
-        resources = {'metadata': {'path': str(self.nb_home), 
+        resources = {'metadata': {'path': str(self.nb_home),
                                   'name': self.title},
                      'converter': converter,
                      'image_data_dict': {}}
@@ -87,7 +92,7 @@ class Publish:
             'Authorization': f'Bearer {self.integration_token}',
             'Accept': 'application/json',
             'Accept-Charset': 'utf-8'
-            }
+        }
         return headers
 
     def get_author_id(self):
@@ -123,12 +128,33 @@ class Publish:
         # MarkdownExporter converts images to base64 bytes automatically
         # MarkdownExporter deep copies resources and fails when matplotlib
         # must remove converter key to not error
-        self.resources.pop('converter') 
+        self.resources.pop('converter')
         me = MarkdownExporter()
         md, self.resources = me.from_notebook_node(self.nb, self.resources)
 
-        image_data_dict = {**self.resources['image_data_dict'], **self.resources['outputs']}
+        image_data_dict = {
+            **self.resources['image_data_dict'], **self.resources['outputs']}
         return md, image_data_dict
+
+    def gistify_markdown(self):
+        if self.gistify:
+            # list-ify the markdown --> ``` elements lets us identify code blocks
+            contents = self.md.split('\n')
+            # add back the new line appendage
+            contents = [x + '\n' for x in contents]
+            # fetch the language type from the resource metadata
+            lang_ext = self.nb['metadata']['language_info']['file_extension']
+            try:
+                md, gist_dict = gistPostprocessor(
+                    contents, self.title, lang_ext=lang_ext)
+            except Exception as e:
+                print('Failed to gistify markdown with error')
+        else:
+            # don't gistify, just return same .md file and empty gist dict
+            md = self.md
+            gist_dict = {}
+
+        return md, gist_dict
 
     def load_images_to_medium(self):
         all_json = []
@@ -139,15 +165,17 @@ class Publish:
                 print('loading image to medium')
                 name = fp.stem
                 file_payload = {'image': (name, data, f'image/{extension}')}
-                r = requests.post(self.IMAGE_URL, headers=self.headers, files=file_payload)
+                r = requests.post(
+                    self.IMAGE_URL, headers=self.headers, files=file_payload)
                 req_json = r.json()
                 try:
                     new_url = req_json['data']['url']
                 except KeyError:
-                    raise ValueError('Problem loading image {name}.{extension} to Medium: ' + r.text)
+                    raise ValueError(
+                        'Problem loading image {name}.{extension} to Medium: ' + r.text)
                 self.md = self.md.replace(file, new_url)
                 all_json.append(req_json)
-        
+
         print('\n\nImage Storage Information from Medium')
         print('-------------------------------------\n')
         print(json.dumps(all_json, indent=4))
@@ -178,7 +206,7 @@ class Publish:
             post_url = self.PUB_POST_URL.format(pub_id=self.pub_id)
         else:
             post_url = self.USER_POST_URL.format(author_id=self.author_id)
-        
+
         json_data = {
             'title': self.title,
             'contentFormat': 'markdown',
@@ -186,12 +214,12 @@ class Publish:
             'license': self.license,
             'publishStatus': self.publish_status,
             'notifyFollowers': self.notify_followers
-            }
+        }
         if self.canonical_url:
             json_data['canonicalUrl'] = self.canonical_url
         if self.tags:
             json_data['tags'] = self.tags
-        
+
         req = requests.post(post_url, headers=self.headers, json=json_data)
         try:
             self.result = req.json()
@@ -216,17 +244,18 @@ class Publish:
         self.author_id = self.get_author_id()
         self.pub_id = self.get_pub_id()
         self.md, self.image_data_dict = self.create_markdown()
+        self.md, self.gist_dict = self.gistify_markdown()
         self.md_save = self.md
         self.load_images_to_medium()
         self.save()
         self.publish_to_medium()
         self.print_results()
-        
 
-def publish(filename, integration_token=None, pub_name=None, title=None, 
-            tags=None, publish_status='draft', notify_followers=False, 
+
+def publish(filename, integration_token=None, pub_name=None, title=None,
+            tags=None, publish_status='draft', notify_followers=False,
             license='all-rights-reserved', canonical_url=None, chrome_path=None,
-            save_markdown=False, table_conversion='chrome'):
+            save_markdown=False, table_conversion='chrome', gistify=False):
     '''
     Publish a Jupyter Notebook directly to Medium as a blog post.
 
@@ -245,34 +274,34 @@ def publish(filename, integration_token=None, pub_name=None, title=None,
 
         Learn how to get an integration token from Medium.
         https://github.com/Medium/medium-api-docs
-    
+
     pub_name : str, default None
         Name of Medium publication. Not necessary if publishing as a user.
-        
+
     title : str, default None
         This title is used for SEO and when rendering the post as a listing, 
         but will not appear in the actual post. Use the first cell of the 
         notebook with an H1 markdown header for the title. 
         i.e. # My Actual Blog Post Title 
-    
+
         Leave as None to use the filename as this title
-    
+
     tags : list of strings, default None
         List of tags to classify the post. Only the first five will be used. 
         Tags longer than 25 characters will be ignored.
-    
+
     publish_status : str, default 'draft'
         The status of the post. Valid values are 'public', 'draft', or 'unlisted'.
         Only draft will be allowed for now. Finalize publication on Medium.
-    
+
     notify_followers : bool, default `False`
         Whether to notify followers that the user has published.
-    
+
     license : str, default 'all-rights-reserved'
         The license of the post. Valid values are 'all-rights-reserved', 'cc-40-by', 
         'cc-40-by-sa', 'cc-40-by-nd', 'cc-40-by-nc', 'cc-40-by-nc-nd', 'cc-40-by-nc-sa', 
         'cc-40-zero', 'public-domain'. The default is 'all-rights-reserved'.
-    
+
     canonical_url : str, default None
         A URL of the original home of this content, if it was originally 
         published elsewhere.
@@ -292,10 +321,10 @@ def publish(filename, integration_token=None, pub_name=None, title=None,
         When 'chrome', a screenshot using the Chrome web browser will be used.
         When 'matplotlib', the matplotlib table function will be used to
         produce the table.
-        
+
     '''
-    p = Publish(filename, integration_token, pub_name, title, tags, 
+    p = Publish(filename, integration_token, pub_name, title, tags,
                 publish_status, notify_followers, license, canonical_url,
-                chrome_path, save_markdown, table_conversion)
+                chrome_path, save_markdown, table_conversion, gistify)
     p.main()
     return p.result

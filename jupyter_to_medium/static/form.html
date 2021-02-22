@@ -159,6 +159,32 @@
             </fieldset>
 
             <fieldset class="form-group">
+              <div class="row">
+                <legend class="col-form-label col-sm-2 pt-0">Gistify Markdown</legend>
+                <div class="col-sm-8">
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="gistify" 
+                           id="yes_gist_md" value="True">
+                    <label class="form-check-label" for="yes_gist_md">
+                      Yes
+                    </label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="gistify" 
+                           id="no_gist_md" value="False" checked="checked">
+                    <label class="form-check-label" for="no_gist_md">
+                      No
+                    </label>
+                  </div>
+                  <small class="form-text text-muted">If selected, codeblocks will be replaced by embedded
+                     links to a gist (per code block). This allows code to show in your medium post with 
+                     python linting. To do so requires you have a github account and github PAT (instructions
+                     found in the jupyter_to_medium instructions.</small>
+                </div>
+              </div>
+          </fieldset>
+
+            <fieldset class="form-group">
                 <div class="row">
                   <legend class="col-form-label col-sm-2 pt-0">Table Conversion</legend>
                   <div class="col-sm-8">
