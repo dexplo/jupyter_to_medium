@@ -222,10 +222,9 @@ class Publish:
         if self.tags:
             json_data['tags'] = self.tags
 
-        # add timeout of 1minute to prevent timeout response for large articles
+        # add timeout of 30 seconds to prevent timeout response for large articles
         req = requests.post(post_url, headers=self.headers,
-                            json=json_data, timeout=60)
-        print(req.elapsed)
+                            json=json_data, timeout=30)
         try:
             self.result = req.json()
         except Exception as e:
