@@ -19,7 +19,8 @@ def _jupyter_bundlerextension_paths():
 def upload(model, handler):
     arguments = ['title', 'integration_token', 'pub_name', 'tags',
                  'publish_status', 'notify_followers', 'license', 'canonical_url',
-                 'chrome_path', 'save_markdown', 'table_conversion', 'gistify']
+                 'chrome_path', 'save_markdown', 'table_conversion', 'gistify',
+                 'gist_threshold']
 
     kwargs = {arg: handler.get_query_argument(arg, None) for arg in arguments}
     path = model['path']
@@ -31,6 +32,7 @@ def upload(model, handler):
     kwargs['canonical_url'] = kwargs['canonical_url'].strip() or None
     kwargs['save_markdown'] = kwargs['save_markdown'] == "True"
     kwargs['gistify'] = kwargs['gistify'] == "True"
+    kwargs['gist_threshold'] = int(kwargs['gist_threshold'])
 
     # add these options in the future to html form
     # kwargs['chrome_path'] = kwargs['chrome_path'].strip() or None

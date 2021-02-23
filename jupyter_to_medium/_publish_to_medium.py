@@ -22,7 +22,8 @@ class Publish:
 
     def __init__(self, filename, integration_token, pub_name, title, tags,
                  publish_status, notify_followers, license, canonical_url,
-                 chrome_path, save_markdown, table_conversion, gistify):
+                 chrome_path, save_markdown, table_conversion, gistify,
+                 gist_threshold):
         self.filename = Path(filename)
         self.img_data_json = self.filename.stem + '_image_data.json'
         self.integration_token = self.get_integration_token(integration_token)
@@ -37,6 +38,7 @@ class Publish:
         self.save_markdown = save_markdown
         self.table_conversion = table_conversion
         self.gistify = gistify
+        self.gist_threshold = gist_threshold
         self.nb_home = self.filename.parent
         self.resources = self.get_resources()
         self.nb = self.get_notebook()
@@ -146,7 +148,7 @@ class Publish:
             lang_ext = self.nb['metadata']['language_info']['file_extension']
             try:
                 md, gist_dict = gistPostprocessor(
-                    contents, self.title, lang_ext=lang_ext)
+                    contents, self.title, lang_ext=lang_ext, gist_threshold=self.gist_threshold)
             except Exception as e:
                 print('Failed to gistify markdown with error')
         else:
@@ -220,7 +222,10 @@ class Publish:
         if self.tags:
             json_data['tags'] = self.tags
 
-        req = requests.post(post_url, headers=self.headers, json=json_data)
+        # add timeout of 1minute to prevent timeout response for large articles
+        req = requests.post(post_url, headers=self.headers,
+                            json=json_data, timeout=60)
+        print(req.elapsed)
         try:
             self.result = req.json()
         except Exception as e:
@@ -255,7 +260,8 @@ class Publish:
 def publish(filename, integration_token=None, pub_name=None, title=None,
             tags=None, publish_status='draft', notify_followers=False,
             license='all-rights-reserved', canonical_url=None, chrome_path=None,
-            save_markdown=False, table_conversion='chrome', gistify=False):
+            save_markdown=False, table_conversion='chrome', gistify=False,
+            gist_threshold=5):
     '''
     Publish a Jupyter Notebook directly to Medium as a blog post.
 
@@ -325,6 +331,7 @@ def publish(filename, integration_token=None, pub_name=None, title=None,
     '''
     p = Publish(filename, integration_token, pub_name, title, tags,
                 publish_status, notify_followers, license, canonical_url,
-                chrome_path, save_markdown, table_conversion, gistify)
+                chrome_path, save_markdown, table_conversion, gistify,
+                gist_threshold)
     p.main()
     return p.result
