@@ -114,6 +114,9 @@ class Publish:
                          f'Here is the publication data returned from Medium\n\n{data}')
 
     def create_markdown(self):
+
+        # Adding a preprocessor here...
+
         mp = MarkdownPreprocessor()
         mp.preprocess(self.nb, self.resources)
 
