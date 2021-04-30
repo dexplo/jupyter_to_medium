@@ -113,7 +113,10 @@ If successful, a message will be printed with the URL to your post.  Additionall
 
 Currently, this package only works for the "classic" Jupyter Notebook and is not available in Jupyter Lab. If you have experience making Jupyter Lab extensions, please let me know.
 
-## Removing pieces of cells using cell tags
+## Removing cells
+The code cells are removed by default. A cell tag ```show``` can supress this behaviour for a specific cell where the code should be included in the medium post.
+
+### Removing pieces of cells using cell tags
 You can remove pieces of cells using [cell tags](https://nbconvert.readthedocs.io/en/latest/removing_cells.html#removing-pieces-of-cells-using-cell-tags). You can use the tags: ```remove_cell```, ```remove_output```, ```remove_input```.
 
 

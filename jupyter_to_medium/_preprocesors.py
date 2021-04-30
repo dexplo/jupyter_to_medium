@@ -150,3 +150,14 @@ class NoExecuteDataFramePreprocessor(Preprocessor):
                             # TODO: Necessary when images from IPython.display module used
                             pass
         return cell, resources 
+
+# Remove code cells if a cell tag 'show' has not been defined.
+class RemoveCodeCellPreprocessor(Preprocessor):
+    
+    def preprocess_cell(self, cell, resources, cell_index):
+        if cell['cell_type'] == 'code':
+            tags=cell['metadata'].get('tags',[])
+            if not 'show' in tags:
+                cell['source'] = ''  # remove the code it cell tag is not == 'show'
+            
+        return cell, resources

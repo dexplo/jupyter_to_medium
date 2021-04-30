@@ -7,7 +7,7 @@ import nbformat
 from nbconvert.exporters import MarkdownExporter
 from nbconvert.preprocessors import TagRemovePreprocessor
 
-from ._preprocesors import MarkdownPreprocessor, NoExecuteDataFramePreprocessor
+from ._preprocesors import MarkdownPreprocessor, NoExecuteDataFramePreprocessor, RemoveCodeCellPreprocessor
 from ._screenshot import Screenshot
 from traitlets.config import Config
 
@@ -133,6 +133,9 @@ class Publish:
         no_ex_pp = NoExecuteDataFramePreprocessor()
         no_ex_pp.preprocess(self.nb, self.resources)
 
+        remove_code_cells_preprocess = RemoveCodeCellPreprocessor()
+        remove_code_cells_preprocess.preprocess(self.nb, self.resources)
+
         # MarkdownExporter converts images to base64 bytes automatically
         # MarkdownExporter deep copies resources and fails when matplotlib
         # must remove converter key to not error
@@ -143,6 +146,7 @@ class Publish:
         c.TagRemovePreprocessor.remove_cell_tags.add("remove_cell")
         c.TagRemovePreprocessor.remove_all_outputs_tags.add('remove_output')
         c.TagRemovePreprocessor.remove_input_tags.add('remove_input',)
+        
         me = MarkdownExporter(config=c)
         
         md, self.resources = me.from_notebook_node(self.nb, self.resources)
