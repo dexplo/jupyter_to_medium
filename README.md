@@ -113,6 +113,10 @@ If successful, a message will be printed with the URL to your post.  Additionall
 
 Currently, this package only works for the "classic" Jupyter Notebook and is not available in Jupyter Lab. If you have experience making Jupyter Lab extensions, please let me know.
 
+## Removing pieces of cells using cell tags
+You can remove pieces of cells using [cell tags](https://nbconvert.readthedocs.io/en/latest/removing_cells.html#removing-pieces-of-cells-using-cell-tags). You can use the tags: ```remove_cell```, ```remove_output```, ```remove_input```.
+
+
 ## Troubleshooting
 
 If your post is unsuccessful, a message with the error will be printed to the screen with information that might help you solve the issue.

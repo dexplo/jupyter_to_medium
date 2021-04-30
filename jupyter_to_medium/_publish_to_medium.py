@@ -5,9 +5,11 @@ from pathlib import Path
 import requests
 import nbformat
 from nbconvert.exporters import MarkdownExporter
+from nbconvert.preprocessors import TagRemovePreprocessor
 
 from ._preprocesors import MarkdownPreprocessor, NoExecuteDataFramePreprocessor
 from ._screenshot import Screenshot
+from traitlets.config import Config
 
 
 class Publish:
@@ -20,9 +22,10 @@ class Publish:
     IMAGE_TYPES = {'png', 'gif', 'jpeg', 'jpg', 'tiff'}
     
 
-    def __init__(self, filename, integration_token, pub_name, title, tags, 
-                 publish_status, notify_followers, license, canonical_url,
-                 chrome_path, save_markdown, table_conversion):
+    def __init__(self, filename:str, integration_token=None, pub_name=None, title=None, 
+            tags=None, publish_status='draft', notify_followers=False, 
+            license='all-rights-reserved', canonical_url=None, chrome_path=None,
+            save_markdown=False, table_conversion='chrome'):
         self.filename = Path(filename)
         self.img_data_json = self.filename.stem + '_image_data.json'
         self.integration_token = self.get_integration_token(integration_token)
@@ -114,6 +117,13 @@ class Publish:
                          f'Here is the publication data returned from Medium\n\n{data}')
 
     def create_markdown(self):
+        """[summary]
+
+        Returns:
+            md : str 
+                markdown
+            image_data_dict : dict
+        """        
 
         # Adding a preprocessor here...
 
@@ -127,7 +137,14 @@ class Publish:
         # MarkdownExporter deep copies resources and fails when matplotlib
         # must remove converter key to not error
         self.resources.pop('converter') 
-        me = MarkdownExporter()
+        
+        # Configure our tag removal
+        c = Config()
+        c.TagRemovePreprocessor.remove_cell_tags.add("remove_cell")
+        c.TagRemovePreprocessor.remove_all_outputs_tags.add('remove_output')
+        c.TagRemovePreprocessor.remove_input_tags.add('remove_input',)
+        me = MarkdownExporter(config=c)
+        
         md, self.resources = me.from_notebook_node(self.nb, self.resources)
 
         image_data_dict = {**self.resources['image_data_dict'], **self.resources['outputs']}
