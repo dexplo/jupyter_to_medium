@@ -2,6 +2,7 @@ from pathlib import Path
 import base64
 import io
 import re
+import requests
 
 import mistune
 from nbconvert.preprocessors import ExecutePreprocessor, Preprocessor
@@ -85,7 +86,17 @@ class MarkdownPreprocessor(Preprocessor):
                 if ext.startswith('.jpg'):
                     ext = '.jpeg'
                 new_image_name = f'markdown_{cell_index}_normal_image_{i}{ext}'
-                image_data = open(nb_home / image_file, 'rb').read()
+                # if embedded from web link then use requests to grab data
+                # only grab from secure urls
+                if 'https://' in image_file:
+                    response = requests.get(image_file)
+                    if response.status_code == 200:
+                        image_data = response.content
+                    else:
+                        # unsuccessful request
+                        print('Unsuccessful request for image: {}'.format(image_file))
+                else:
+                    image_data = open(nb_home / image_file, 'rb').read()
                 cell['source'] = cell['source'].replace(image_file, new_image_name)
                 image_data_dict[new_image_name] = image_data
 
