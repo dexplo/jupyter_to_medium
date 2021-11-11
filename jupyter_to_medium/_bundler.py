@@ -6,12 +6,19 @@ from tornado import gen
 
 from ._publish_to_medium import publish
 
+# https://testnb.readthedocs.io/en/latest/examples/Notebook/Distributing%20Jupyter%20Extensions%20as%20Python%20Packages.html#
+# as explained here this is required to tell Jupyter how we want the bundle to show
+
 
 def _jupyter_bundlerextension_paths():
     return [{
+        # the name of the bundle
         "name": "jupyter_to_medium_bundler",
+        # where the bundler.py file sits to bundle the code
         "module_name": "jupyter_to_medium._bundler",
+        # what we want it to show as in the menu
         "label": "Medium Post",
+        # which menu we want it as (download vs deploy)
         "group": "deploy",
     }]
 
@@ -32,7 +39,10 @@ def upload(model, handler):
     kwargs['canonical_url'] = kwargs['canonical_url'].strip() or None
     kwargs['save_markdown'] = kwargs['save_markdown'] == "True"
     kwargs['gistify'] = kwargs['gistify'] == "True"
-    kwargs['gist_threshold'] = int(kwargs['gist_threshold'])
+    if kwargs['gist_threshold'] == '':
+        kwargs['gist_threshold'] = 0
+    else:
+        kwargs['gist_threshold'] = int(kwargs['gist_threshold'])
 
     # add these options in the future to html form
     # kwargs['chrome_path'] = kwargs['chrome_path'].strip() or None
@@ -62,6 +72,10 @@ def upload(model, handler):
 
 
 def read_html(name):
+    '''
+
+    '''
+
     mod_path = Path(__file__).parent
     html_path = mod_path / 'static' / f'{name}.html'
     return open(html_path).read()
@@ -85,6 +99,8 @@ def get_html_fail(data):
 
 
 # synchoronous execution
+# this is the function that is called and runs when we click
+# 'deploy as' --> 'medium post'
 def bundle(handler, model):
     """
     Parameters
@@ -94,17 +110,29 @@ def bundle(handler, model):
     model : dict
         Notebook model from the configured ContentManager
     """
+
+    # check on the app_status in the form.html tag
     app_status = handler.get_query_argument('app_status', None)
 
+    # if we've never initialised the form e.g. when clicked
     if app_status is None:
+        # create the input element to be included in our form
         xsrf_input = handler.xsrf_form_html()
+        # get the base notebook filename to populate the form
         notebook_filename = Path(model['name']).stem
+        # create the html we will push to the user (the input form)
         html = get_html_form(xsrf_input, notebook_filename)
+        # write this html to the tornado handler so user will see
         handler.write(html)
+    # else if we've already initialised the form
     elif app_status == 'waiting':
+        # read the html if we've filled in more of the user fields
+        # this is required so we continuously serve the correct html
         html = read_html('waiting')
+        # write updated html
         handler.write(html)
         handler.flush()
+
         data = upload(model, handler)
         if data['app_status'] == 'success':
             html = get_html_success(data)
