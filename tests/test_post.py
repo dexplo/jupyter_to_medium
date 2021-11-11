@@ -10,3 +10,7 @@ class TestPost:
 
     def test_empty_matplotlib(self):
         jtm.publish('tests/notebooks/Test Empty Matplotlib Screenshot.ipynb')
+    
+
+    def test_image_creation(self):
+        jtm.publish('tests/notebooks/Test Image Creation.ipynb')
