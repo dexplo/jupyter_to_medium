@@ -6,3 +6,7 @@ class TestPost:
 
     def test_post(self):
         jtm.publish('tests/notebooks/Test Medium Blog Post.ipynb')
+    
+
+    def test_empty_matplotlib(self):
+        jtm.publish('tests/notebooks/Test Empty Matplotlib Screenshot.ipynb')

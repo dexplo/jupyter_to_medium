@@ -4,7 +4,6 @@ import textwrap
 
 from bs4 import BeautifulSoup
 import numpy as np
-import pandas as pd
 from matplotlib.figure import Figure
 from matplotlib import patches as mpatches, lines as mlines
 from matplotlib.transforms import Bbox
