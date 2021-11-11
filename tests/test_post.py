@@ -14,3 +14,6 @@ class TestPost:
 
     def test_image_creation(self):
         jtm.publish('tests/notebooks/Test Image Creation.ipynb')
+
+    def test_gistify(self):
+        jtm.publish('tests/notebooks/Test Gistify Markdown.ipynb')
