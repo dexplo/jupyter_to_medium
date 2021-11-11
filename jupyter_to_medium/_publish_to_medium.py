@@ -6,6 +6,7 @@ import requests
 import nbformat
 from nbconvert.exporters import MarkdownExporter
 
+from ._postprocessors import gistPostprocessor
 from ._preprocesors import MarkdownPreprocessor, NoExecuteDataFramePreprocessor
 from ._screenshot import Screenshot
 
@@ -22,7 +23,8 @@ class Publish:
 
     def __init__(self, filename, integration_token, pub_name, title, tags, 
                  publish_status, notify_followers, license, canonical_url,
-                 chrome_path, save_markdown, table_conversion):
+                 chrome_path, save_markdown, table_conversion, gistify,
+                 gist_threshold):
         self.filename = Path(filename)
         self.img_data_json = self.filename.stem + '_image_data.json'
         self.integration_token = self.get_integration_token(integration_token)
@@ -36,6 +38,8 @@ class Publish:
         self.chrome_path = chrome_path
         self.save_markdown = save_markdown
         self.table_conversion = table_conversion
+        self.gistify = gistify
+        self.gist_threshold = gist_threshold
         self.nb_home = self.filename.parent
         self.resources = self.get_resources()
         self.nb = self.get_notebook()
@@ -130,6 +134,26 @@ class Publish:
         image_data_dict = {**self.resources['image_data_dict'], **self.resources['outputs']}
         return md, image_data_dict
 
+    def gistify_markdown(self):
+        if self.gistify:
+            # list-ify the markdown --> ``` elements lets us identify code blocks
+            contents = self.md.split('\n')
+            # add back the new line appendage
+            contents = [x + '\n' for x in contents]
+            # fetch the language type from the resource metadata
+            lang_ext = self.nb['metadata']['language_info']['file_extension']
+            try:
+                md, gist_dict = gistPostprocessor(
+                    contents, self.title, lang_ext=lang_ext, gist_threshold=self.gist_threshold)
+            except Exception as e:
+                print('Failed to gistify markdown with error')
+        else:
+            # don't gistify, just return same .md file and empty gist dict
+            md = self.md
+            gist_dict = {}
+
+        return md, gist_dict
+
     def load_images_to_medium(self):
         all_json = []
         for file, data in self.image_data_dict.items():
@@ -191,8 +215,9 @@ class Publish:
             json_data['canonicalUrl'] = self.canonical_url
         if self.tags:
             json_data['tags'] = self.tags
-        
-        req = requests.post(post_url, headers=self.headers, json=json_data)
+
+        # add timeout of 30 seconds to prevent timeout response for large articles
+        req = requests.post(post_url, headers=self.headers, json=json_data, timeout=30)
         try:
             self.result = req.json()
         except Exception as e:
@@ -216,6 +241,7 @@ class Publish:
         self.author_id = self.get_author_id()
         self.pub_id = self.get_pub_id()
         self.md, self.image_data_dict = self.create_markdown()
+        self.md, self.gist_dict = self.gistify_markdown()
         self.md_save = self.md
         self.load_images_to_medium()
         self.save()
@@ -226,7 +252,8 @@ class Publish:
 def publish(filename, integration_token=None, pub_name=None, title=None, 
             tags=None, publish_status='draft', notify_followers=False, 
             license='all-rights-reserved', canonical_url=None, chrome_path=None,
-            save_markdown=False, table_conversion='chrome'):
+            save_markdown=False, table_conversion='chrome', gistify=False,
+            gist_threshold=5):
     '''
     Publish a Jupyter Notebook directly to Medium as a blog post.
 
@@ -296,6 +323,7 @@ def publish(filename, integration_token=None, pub_name=None, title=None,
     '''
     p = Publish(filename, integration_token, pub_name, title, tags, 
                 publish_status, notify_followers, license, canonical_url,
-                chrome_path, save_markdown, table_conversion)
+                chrome_path, save_markdown, table_conversion, gistify,
+                gist_threshold)
     p.main()
     return p.result
