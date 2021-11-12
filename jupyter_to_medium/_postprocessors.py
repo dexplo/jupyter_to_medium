@@ -11,21 +11,21 @@ def write_file(file_name, new_content):
 
 
 def get_github_api_token(tok):
-    '''
+    """
     Fetch github personal access token (PAT) for gist api request using POST
     Parameters
     ----------
     tok : str
         PAT if passed as string, else None and will be fetched
-    '''
+    """
     if not tok:
-        tok_path = Path.home() / '.jupyter_to_medium' / 'github_token'
+        tok_path = Path.home() / ".jupyter_to_medium" / "github_token"
         tok = open(tok_path).read().splitlines()[0]
     return tok
 
 
 def get_formatted_gist_code(response, output_type):
-    '''
+    """
     Parse gist api response and return desired output
     For medium, this is an http url for embedded the gist
     Parameters
@@ -34,20 +34,23 @@ def get_formatted_gist_code(response, output_type):
         gist api response from the POST request to create gist
     output_type: str
         desired publication name
-    '''
-    if output_type == 'hugo':
-        owner = response['owner']['login']
-        id = response['id']
-        short_code = '{{< gist '+owner+' '+id+' >}}'
+    """
+    if output_type == "hugo":
+        owner = response["owner"]["login"]
+        id = response["id"]
+        short_code = "{{< gist " + owner + " " + id + " >}}"
         return short_code
     else:
-        return response['html_url']
+        return response["html_url"]
 
 
-def create_gist(title, description, content, output_type='medium', github_token=None):
-    '''
+def create_gist(
+    title, description, content, output_type="medium", github_token=None
+):
+    """
     Takes code string, creates gist, returns url for publication embedding
-    Can see git ref here: https://docs.github.com/en/rest/reference/gists#create-a-gist
+    Can see git ref here:
+    https://docs.github.com/en/rest/reference/gists#create-a-gist
     Parameters
     ----------
     title : str
@@ -61,43 +64,45 @@ def create_gist(title, description, content, output_type='medium', github_token=
     output_type: str
         desired publication name
     github_token: str
-        can pass github personal access token else defaults to ~/.jupyter_to_medium/github_token
-    '''
+        can pass github personal access token
+        else defaults to ~/.jupyter_to_medium/github_token
+    """
     GITHUB_API = "https://api.github.com"
     try:
         API_TOKEN = get_github_api_token(github_token)
-    except Exception as e:
+    except Exception:
         raise ValueError(
-            'Problem fetching Github Token \n Ensure it is located in ~/.jupyter_to_medium/github_token')
+            "Problem fetching Github Token \n \
+                Ensure it is located in ~/.jupyter_to_medium/github_token"
+        )
 
     # form a request URL
-    url = GITHUB_API+"/gists"
+    url = GITHUB_API + "/gists"
     # headers, parameters, payload
-    headers = {'Authorization': 'token %s' % API_TOKEN}
-    params = {'scope': 'gist'}
+    headers = {"Authorization": "token %s" % API_TOKEN}
+    params = {"scope": "gist"}
     payload = {
         "description": description,
         "public": True,
-        "files": {title: {
-            "content": content
-        }}
+        "files": {title: {"content": content}},
     }
     # make a request
-    res = requests.post(url, headers=headers, params=params,
-                        data=json.dumps(payload))
+    res = requests.post(
+        url, headers=headers, params=params, data=json.dumps(payload)
+    )
     # if 201 response, then proceed, else fail with error
     try:
         # success with gist creation
         j = json.loads(res.text)
         output = get_formatted_gist_code(j, output_type)
-    except Exception as e:
-        raise ValueError('Problem with gistify-ing:\n' + res.text)
+    except Exception:
+        raise ValueError("Problem with gistify-ing:\n" + res.text)
 
     return output
 
 
 def gist_namer(art_title, num):
-    '''
+    """
     Create formatted gist name to help with grouping gists
     Parameters
     ----------
@@ -105,16 +110,22 @@ def gist_namer(art_title, num):
         defaults to the notebook name
     num: int
         gist count for this article e.g. first gist of article is 0
-    '''
+    """
     # lower case and snake_case the whole thing
-    title = art_title.lower().replace(' ', '_')
+    title = art_title.lower().replace(" ", "_")
     title += str(num)
     return title
 
 
-def gistPostprocessor(markdown_list, art_title, lang_ext='.py', output_type='medium', gist_threshold=5):
-    '''
-    Iterate over listify'ed markdown, identify code blocks, insert gist http instead
+def gistPostprocessor(
+    markdown_list,
+    art_title,
+    lang_ext=".py",
+    output_type="medium",
+    gist_threshold=5,
+):
+    """
+    Iterate over listify'ed markdown, identify code, insert gist http instead
     Overall to remove unlinted codeblocks from .md for medium publication
     To be called after converting an .ipynb to .md format
     Parameters
@@ -127,32 +138,34 @@ def gistPostprocessor(markdown_list, art_title, lang_ext='.py', output_type='med
         desired publication name e.g. 'medium'
     gist_threshold: int
         only gistify code snippets with a line length greater than this
-    '''
+    """
 
     gist_dict = {}
-    new_md_str = ''
+    new_md_str = ""
     code_block_started = False
     code_block = []
     gist_count = 0
     code_block_length = 0
 
     for line in markdown_list:
-        if line.startswith('```') and not code_block_started:
+        if line.startswith("```") and not code_block_started:
             # we must have the start of a new code block
             code_block_started = True
-        elif line.startswith('```') and code_block_started:
+        elif line.startswith("```") and code_block_started:
             # we must have the end of a code block
             # check if code block is greater than threshold
             if len(code_block) > gist_threshold:
                 # convert code block list to string
-                code_block = ''.join(code_block)
+                code_block = "".join(code_block)
                 # let's replace it with a gist
                 # time to gistify the code we have
                 gist_name = gist_namer(art_title, gist_count)
-                short_code = create_gist(str(uuid.uuid4())+lang_ext,
-                                         gist_name,
-                                         code_block,
-                                         output_type)
+                short_code = create_gist(
+                    str(uuid.uuid4()) + lang_ext,
+                    gist_name,
+                    code_block,
+                    output_type,
+                )
                 # now add to our new md string
                 new_md_str += "\n" + short_code + "\n"
                 # update gist_dict
@@ -161,8 +174,8 @@ def gistPostprocessor(markdown_list, art_title, lang_ext='.py', output_type='med
                 gist_count += 1
             else:
                 # let's keep it as it is, we need to add back the ```
-                code_block = ''.join(code_block)
-                new_md_str += '```\n' + code_block + '```\n'
+                code_block = "".join(code_block)
+                new_md_str += "```\n" + code_block + "```\n"
             # reset our looping vars
             code_block_length = 0
             code_block = []
