@@ -9,12 +9,12 @@ from tempfile import TemporaryDirectory
 import numpy as np
 from matplotlib import image as mimage
 
-MAX_CROP = .22
+MAX_CROP = 0.22
 
 
 def get_system():
     system = platform.system().lower()
-    if system in ['darwin', 'linux', 'windows']:
+    if system in ["darwin", "linux", "windows"]:
         return system
     else:
         raise OSError(f"Unsupported OS - {system}")
@@ -45,7 +45,13 @@ def get_chrome_path(chrome_path=None):
             "/bin",
             "/opt/google/chrome",
         ]
-        commands = ["google-chrome", "chrome", "chromium", "chromium-browser", "brave-browser"]
+        commands = [
+            "google-chrome",
+            "chrome",
+            "chromium",
+            "chromium-browser",
+            "brave-browser",
+        ]
         for path in paths:
             for cmd in commands:
                 chrome_path = shutil.which(cmd, path=path)
@@ -54,6 +60,7 @@ def get_chrome_path(chrome_path=None):
         raise OSError("Chrome executable not able to be found on your machine")
     elif system == "windows":
         import winreg
+
         locs = [
             r"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe",
             r"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\brave.exe",
@@ -67,9 +74,16 @@ def get_chrome_path(chrome_path=None):
 
 
 class Screenshot:
-
-    def __init__(self, center_df=True, max_rows=None, max_cols=None, chrome_path=None, 
-                 fontsize=18, encode_base64=True, limit_crop=True):
+    def __init__(
+        self,
+        center_df=True,
+        max_rows=None,
+        max_cols=None,
+        chrome_path=None,
+        fontsize=18,
+        encode_base64=True,
+        limit_crop=True,
+    ):
         self.center_df = center_df
         self.max_rows = max_rows
         self.max_cols = max_cols
@@ -85,7 +99,7 @@ class Screenshot:
         css_file = mod_dir / "static" / "style.css"
         with open(css_file) as f:
             css = "<style>" + f.read() + "</style>"
-        justify = 'center' if self.center_df else 'left'
+        justify = "center" if self.center_df else "left"
         css = css.format(fontsize=fontsize, justify=justify)
         return css
 
@@ -96,12 +110,8 @@ class Screenshot:
         with open(temp_html, "w") as f:
             f.write(self.html)
 
-        with open(temp_img, "wb") as f:        
-            args = [
-                "--enable-logging",
-                "--disable-gpu",
-                "--headless"
-                ]
+        with open(temp_img, "wb") as f:
+            args = ["--enable-logging", "--disable-gpu", "--headless"]
 
             if self.ss_width and self.ss_height:
                 args.append(f"--window-size={self.ss_width},{self.ss_height}")
@@ -109,12 +119,12 @@ class Screenshot:
             args += [
                 "--hide-scrollbars",
                 f"--screenshot={str(temp_img)}",
-                str(temp_html)
-                ]
+                str(temp_html),
+            ]
 
             subprocess.run(executable=self.chrome_path, args=args)
 
-        with open(temp_img, 'rb') as f:
+        with open(temp_img, "rb") as f:
             img_bytes = f.read()
 
         buffer = io.BytesIO(img_bytes)
@@ -135,7 +145,7 @@ class Screenshot:
         if all_white_horiz[-30:].sum() != 30:
             self.ss_height = int(self.ss_height * 1.2)
             enlarge = True
-            
+
         if enlarge:
             return self.take_screenshot()
 
@@ -149,14 +159,14 @@ class Screenshot:
             max_crop = int(img.shape[1] * MAX_CROP)
             left = min(left, max_crop)
             right = max(right, -max_crop)
-            
+
         diff_horiz = np.diff(all_white_horiz)
         top = diff_horiz.argmax()
         bottom = -diff_horiz[::-1].argmax()
         new_img = img[top:bottom, left:right]
         return new_img
 
-    def finalize_image(self, img):        
+    def finalize_image(self, img):
         buffer = io.BytesIO()
         mimage.imsave(buffer, img)
         img_str = buffer.getvalue()
