@@ -7,7 +7,9 @@ import nbformat
 from nbconvert.exporters import MarkdownExporter
 
 from ._postprocessors import gistPostprocessor
-from ._preprocesors import MarkdownPreprocessor, NoExecuteDataFramePreprocessor
+from ._preprocesors import MarkdownPreprocessor
+from ._preprocesors import NoExecuteDataFramePreprocessor
+from ._preprocesors import LatexPreprocessor
 
 
 class Publish:
@@ -88,6 +90,14 @@ class Publish:
             )
 
     def get_resources(self):
+        """ Creates a dict of meta data to be passed around during conversion
+        process. Most important bit is the choice of converter to convert
+        markdown html tables into images that show nicely in Medium
+
+        Returns:
+            dict: Dict contaning path to and name of notebook and table
+            converter instance
+        """
         if self.table_conversion == "chrome":
             from ._screenshot import Screenshot
 
@@ -150,6 +160,13 @@ class Publish:
         )
 
     def create_markdown(self):
+
+        # need to convert latex here before markdown preprocessor runs
+        # as the mp will handle our images for us into image_data_dict
+        lp = LatexPreprocessor()
+        lp.preprocess(self.nb, self.resources)
+
+        # this is where the magic happens - image conversion etc
         mp = MarkdownPreprocessor()
         mp.preprocess(self.nb, self.resources)
 
@@ -194,6 +211,15 @@ class Publish:
         return md, gist_dict
 
     def load_images_to_medium(self):
+        """
+        Assumption here is that the image dict has the following format
+        {file_name/file_type: image_data}
+        e.g. {'my_image/png': 'aGnfkmb523bmSH...'}
+        It is also assumed that the source for the image cell has the form
+        ![...](file_name) i.e. the filename in the image_data_dict keys
+        must be present in the source so the final operation to place the
+        link to the Medium servers where the images get uploaded works
+        """
         all_json = []
         for file, data in self.image_data_dict.items():
             fp = Path(file)
@@ -213,6 +239,8 @@ class Publish:
                         "Problem loading image {name}.{extension} to Medium: "
                         + r.text
                     )
+                # this is the line that updates the markdown to point to the
+                # Medium image servers for the uploaded images
                 self.md = self.md.replace(file, new_url)
                 all_json.append(req_json)
 
@@ -222,8 +250,6 @@ class Publish:
 
     def save(self):
         # save markdown and add extra image files
-        # otherwise tempdirectory will be deleted
-
         if self.save_markdown:
             local_image_dir = Path(self.title + "_files")
             full_path = self.nb_home / local_image_dir
@@ -242,6 +268,7 @@ class Publish:
                 f.write(self.md_save)
 
     def publish_to_medium(self):
+        # either publish to publication or own pages
         if self.pub_id:
             post_url = self.PUB_POST_URL.format(pub_id=self.pub_id)
         else:
@@ -286,12 +313,23 @@ class Publish:
     def main(self):
         self.author_id = self.get_author_id()
         self.pub_id = self.get_pub_id()
+        # this is the main function for converting images etc
         self.md, self.image_data_dict = self.create_markdown()
+        # check if we want to convert code blocks to gists
+        # if so resave the markdown with links to created gists
         self.md, self.gist_dict = self.gistify_markdown()
+        # create copy of the markdown for saving
+        # markdown to be uploaded to Medium needs links to
+        # images that are stored on Medium server, not locally
         self.md_save = self.md
+        # save the images from image_data_dict to Medium servers
+        # and replace link in markdown to point to those locations
         self.load_images_to_medium()
+        # save the markdown if requested by optional param (default: no)
         self.save()
+        # publish the notebook
         self.publish_to_medium()
+        # feed back a bit on info and update the html screen in jupyter
         self.print_results()
 
 

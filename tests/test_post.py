@@ -13,3 +13,6 @@ class TestPost:
 
     def test_gistify(self):
         jtm.publish("tests/notebooks/Test Gistify Markdown.ipynb")
+
+    def test_latex(self):
+        jtm.publish("tests/notebooks/Test Latex.ipynb")

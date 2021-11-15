@@ -1,10 +1,14 @@
-from pathlib import Path
 import base64
+import mistune
+from nbconvert.preprocessors import Preprocessor
+from pathlib import Path
 import re
 import requests
 
-import mistune
-from nbconvert.preprocessors import Preprocessor
+from _latex import create_attachment_dict
+from _latex import is_latex_cell
+from _latex import render_latex
+from _latex import format_latex
 
 
 def get_image_files(md_source, only_http=False):
@@ -76,18 +80,49 @@ def get_image_tags(md_source, only_http=False):
     return kept_files
 
 
-class MarkdownPreprocessor(Preprocessor):
+class LatexPreprocessor(Preprocessor):
     def preprocess_cell(self, cell, resources, cell_index):
+        # check if this is a latex cell
+        if is_latex_cell(cell):
+            # then we need to convet
+            latex = cell["source"]
+            # create it and render it
+            latex_fmt = format_latex(latex)
+            latex_rendered = render_latex(latex_fmt)
+            # now we need to create a temp file to store it it
+            # create encoded str as will decode when processing attachments
+            img_str = base64.b64encode(latex_rendered)
+            # create data for the attachment dict
+            attach_dict = create_attachment_dict(cell, img_str)
+            cell["attachments"] = attach_dict
+            cid = cell["id"]
+            cell["source"] = "![{}.png](attachment:{}.png)".format(cid, cid)
+
+        return cell, resources
+
+
+class MarkdownPreprocessor(Preprocessor):
+    # this function overrides the default function for Preprocessor
+    def preprocess_cell(self, cell, resources, cell_index):
+        # get the notebook path set by get_resources already
         nb_home = Path(resources["metadata"]["path"])
+        # get image_data_dict - this starts as blank then gets populated
+        # as we go through the cells and find cells which we think contain
+        # images, tables that *should* be images etc
         image_data_dict = resources["image_data_dict"]
         if cell["cell_type"] == "markdown":
-            # find normal markdown images
+            # find all images in this cell using regex
             all_image_files = get_image_files(cell["source"])
+
+            # for each image file path identified
             for i, image_file in enumerate(all_image_files):
                 ext = Path(image_file).suffix
+                # correct ext to jpeg if required
                 if ext.startswith(".jpg"):
                     ext = ".jpeg"
+                # new name for the image in the markdown
                 new_image_name = f"markdown_{cell_index}_normal_image_{i}{ext}"
+
                 # if embedded from web link then use requests to grab data
                 # only grab from secure urls
                 if "https://" in image_file:
@@ -102,13 +137,17 @@ class MarkdownPreprocessor(Preprocessor):
                             )
                         )
                 else:
+                    # read the image data in from the file path
                     image_data = open(nb_home / image_file, "rb").read()
+                # replace the image name in the markdown with the new name
                 cell["source"] = cell["source"].replace(
                     image_file, new_image_name
                 )
+                # add this image to the dict
                 image_data_dict[new_image_name] = image_data
 
             # find HTML <img> tags
+            # do the same as the above but for images embedded in html tags
             all_image_tag_files = get_image_tags(cell["source"])
             for i, (entire_tag, src) in enumerate(all_image_tag_files):
                 ext = Path(src).suffix
@@ -124,6 +163,8 @@ class MarkdownPreprocessor(Preprocessor):
                 )
 
             # find images attached to markdown through dragging and dropping
+            # this is because those images will have 'attachements' key
+            # in the dict for their cell
             attachments = cell.get("attachments", {})
             for i, (image_name, data) in enumerate(attachments.items()):
                 # I think there is only one image per attachment
@@ -136,6 +177,7 @@ class MarkdownPreprocessor(Preprocessor):
                     new_image_name = (
                         f"markdown_{cell_index}_attachment_{i}_{j}.{ext}"
                     )
+                    # decode the image data and add to overall image dict
                     image_data = base64.b64decode(base64_data)
                     image_data_dict[new_image_name] = image_data
                     cell["source"] = cell["source"].replace(
