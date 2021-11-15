@@ -2,53 +2,30 @@ from io import BytesIO as StringIO
 import matplotlib.pyplot as plt
 
 
-def get_latex_cells(md_source):
-
-    # var to hold cells marked as latex
-    latex_cells = []
-    # get markdown cells only
-    md_cells = [x for x in md_source["cells"] if x["cell_type"] == "markdown"]
-    # if none identified then don't need to waste time
-    if len(md_cells) == 0:
-        return latex_cells
-
-    # iterate
-    for cell in md_cells:
-        # get source markdown
-        s = cell["source"]
-        # check if it is a list
-        if isinstance(s, list):
-            # then we check first and last elements
-            if len(s[0]) > 1 and s[0][:2] == "$$":
-                if len(s[-1]) > 1 and s[-1][-2:] == "$$":
-                    # then it's a latex block
-                    latex_cells.append(cell)
-        elif isinstance(s, str):
-            if len(s) > 4 and s[:2] == "$$" and s[-2:] == "$$":
-                # then it's a latex block
-                latex_cells.append(cell)
-
-    return latex_cells
-
-
 def is_latex_cell(cell):
 
+    # only look at markdown cells
     if cell["cell_type"] == "markdown":
+        # get cell source
         s = cell["source"]
         if len(s) == 0:
             return False
         else:
-            # check if it is a list
-            if isinstance(s, list):
-                # then we check first and last elements
-                if len(s[0]) > 1 and s[0][:2] == "$$":
-                    if len(s[-1]) > 1 and s[-1][-2:] == "$$":
-                        return True
-            # otherwise it's a string
-            elif isinstance(s, str):
+            # cell sources are always strings
+            # first let's try to convert to a list
+            s_l = s.split("\n")
+            if len(s_l) == 1:
+                # then we only have a 1 liner
                 if len(s) > 4 and s[:2] == "$$" and s[-2:] == "$$":
                     # then it's a latex block
                     return True
+            else:
+                # we have a multiline bit of source
+                # check if top and bottom comments denote latex
+                if len(s_l[0]) > 1 and s_l[0][:2] == "$$":
+                    if len(s_l[-1]) > 1 and s_l[-1][-2:] == "$$":
+                        return True
+    # else we must just be a normal bit of source
     return False
 
 
@@ -83,7 +60,7 @@ def render_latex(formula, fontsize=10, dpi=200, format_="png"):
     return buffer_.getvalue()
 
 
-def format_single_line_latex(lt):
+def format_single_line_latex(lt: str) -> str:
 
     # we want to do the following to a 1 liner
     # - remove '$$' from start and end
@@ -97,7 +74,35 @@ def format_single_line_latex(lt):
     return lt
 
 
-def format_multiline_latex(latex):
+def replicate_alignment(lt: list) -> list:
+
+    # new list with offset latex
+    offset_lt = []
+    found_first_equals = False
+    offset = 0
+
+    for line in lt:
+        if "&=" in line:
+            # check if this is the first
+            if not found_first_equals:
+                # then this is the first so find offset
+                # factor of 1.5 if just because spaces tend to be
+                # thinner than text
+                offset = line.find("&=") * 1.5 // 1
+                found_first_equals = True
+                # replace with normal equals
+                offset_lt.append(line.replace("&=", "="))
+            else:
+                # we just need to replace
+                replacement = r"\ " * offset + "="
+                offset_lt.append(line.replace("&=", replacement))
+        else:
+            # just add it on
+            offset_lt.append(line)
+    return offset_lt
+
+
+def format_multiline_latex(latex: list) -> str:
 
     # we have a multi-liner - we want to:
     # - remove the new lines, we will replace later
@@ -122,14 +127,14 @@ def format_multiline_latex(latex):
             # remove \begin{align } and \end{align}
             lt = [x for x in lt if x != "\\begin{align}"]
             lt = [x for x in lt if x != "\\end{align}"]
-            # also flip '&=' to just '='
-            lt = [x.replace("&=", "=") for x in lt]
         else:
             # remove \begin{align } and \end{align}
             lt = [x for x in lt if "\\begin" in x]
             lt = [x for x in lt if "\\end" in x]
-            # also flip '&=' to just '='
-            lt = [x.replace("&=", "=") for x in lt]
+
+        # also flip '&=' to just '='
+        # try and line up the alignment if there is some
+        lt = replicate_alignment(lt)
 
     # finally format multi-line as single line
     l_out = []
@@ -150,16 +155,15 @@ def format_multiline_latex(latex):
     return l_out
 
 
-def format_latex(latex):
+def format_latex(latex: str) -> str:
 
     # seperate handling for one liners vs multi-liners
-    if isinstance(latex, str):
-        if "\n" in latex:
-            latex = latex.split("\n")
-            lt = format_multiline_latex(latex)
-        else:
-            lt = format_single_line_latex(latex)
+    latex = latex.split("\n")
+    if len(latex) == 1:
+        # then we have a 1 liner
+        lt = format_single_line_latex(latex[0])
     else:
+        # else multiline statement
         lt = format_multiline_latex(latex)
     return lt
 

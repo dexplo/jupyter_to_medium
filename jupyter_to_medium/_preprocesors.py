@@ -5,10 +5,10 @@ from pathlib import Path
 import re
 import requests
 
-from _latex import create_attachment_dict
-from _latex import is_latex_cell
-from _latex import render_latex
-from _latex import format_latex
+from ._latex import create_attachment_dict
+from ._latex import is_latex_cell
+from ._latex import render_latex
+from ._latex import format_latex
 
 
 def get_image_files(md_source, only_http=False):
