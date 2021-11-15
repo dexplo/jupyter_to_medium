@@ -88,7 +88,7 @@ def replicate_alignment(lt: list) -> list:
                 # then this is the first so find offset
                 # factor of 1.5 if just because spaces tend to be
                 # thinner than text
-                offset = line.find("&=") * 1.5 // 1
+                offset = int(line.find("&=") * 1.5 // 1)
                 found_first_equals = True
                 # replace with normal equals
                 offset_lt.append(line.replace("&=", "="))
