@@ -15,6 +15,7 @@ Do you ....
 * Use Jupyter Notebooks to write your posts?
 * Dislike the time and effort it takes to transfer your posts from Jupyter to Medium?
 * Get lost/bored when switching between the medium editor, gist etc to create well linted code?
+* Want to integrate LaTeX into your posts without manually screenshot-ing all your equation cells?
 
 If so, jupyter_to_medium will automate the process of taking your Jupyter Notebook, as is, and publishing it as a Medium post in almost no time at all saving huge amounts of time.
 
