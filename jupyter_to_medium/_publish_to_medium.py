@@ -201,8 +201,8 @@ class Publish:
                     lang_ext=lang_ext,
                     gist_threshold=self.gist_threshold,
                 )
-            except Exception:
-                print("Failed to gistify markdown with error")
+            except Exception as e:
+                print("Failed to gistify markdown with error: {}".format(e))
         else:
             # don't gistify, just return same .md file and empty gist dict
             md = self.md
