@@ -24,6 +24,8 @@ Do you...
 * Publish blog posts on Medium?
 * Use Jupyter Notebooks to write your posts?
 * Dislike the time and effort it takes to transfer your posts from Jupyter to Medium?
+* Get lost/bored when switching between the medium editor, gist etc to create well linted code?
+* Want to integrate LaTeX into your posts without manually screenshot-ing all your equation cells?
 
 If so, jupyter_to_medium will automate the process of taking your Jupyter Notebook as is and publishing it as a Medium post in almost no time at all, saving huge amounts of time.
 
@@ -42,6 +44,12 @@ or
 
 `conda install -c conda-forge jupyter_to_medium`
 
+### Automatically activated
+
+You should be able to skip the next step, but if the extension is not showing up in your notebook, run the following command:
+
+`jupyter bundlerextension enable --py jupyter_to_medium._bundler --sys-prefix`
+
 ## Get an Integration Token from Medium
 
 Before using this package, you must request an integration token from Medium. [Read the instructions here on how to get your integration token](https://github.com/Medium/medium-api-docs).
@@ -55,6 +63,12 @@ Once you have your integration token, create the following folder and file in yo
 ```
 
 If you don't save it to this file, you'll need to access it every time you make a new post.
+
+### Create / save your github PAT (only required for gist integration)
+
+When publishing, jtm can take unformatted code snippets and replace them with [linted gists](https://gist.github.com/mjam03/761d017e821b62c3adf2d4cf1b7477d3). In order to do this, it needs to create the gists which requires github access as well as a Personal Access Token (PAT). To create a github account, sign up [here](https://github.com/) and then follow [these instructions](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token) to create a PAT - __ensure to select the option for creating gists__.
+
+Once you have your Github PAT, similar to the integration token, create the folder and file `.jupyter_to_medium/github_token` in your home directory and save the token there. If you don't save it, you'll need to access it every time you wish to make a new post.
 
 ## Usage
 
@@ -117,7 +131,9 @@ jtm.publish('My Awesome Jupyter Notebook.ipynb',
             canonical_url=None,
             chrome_path=None,
             save_markdown=False,
-            table_conversion='chrome'
+            table_conversion='chrome',
+            gistify=False,
+            gist_threshold=5
             )
 ```
 
@@ -135,10 +151,3 @@ If your post is unsuccessful, a message with the error will be printed to the sc
 
 By default, tables will be converted via Chrome web browser by taking screenshots of them. If you don't have Chrome installed or cannot 
 get chrome to work, select 'matplotlib' for the table conversion.
-
-## Dependencies
-
-* nbconvert
-* requests
-* Google Chrome / Brave browser
-* matplotlib (if Chrome browser does not work)

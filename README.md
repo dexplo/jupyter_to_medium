@@ -112,7 +112,8 @@ jtm.publish('My Awesome Jupyter Notebook.ipynb',
             chrome_path=None,
             save_markdown=False,
             table_conversion='chrome',
-            gistify=False
+            gistify=False,
+            gist_threshold=5
             )
 ```
 
@@ -130,11 +131,3 @@ If your post is unsuccessful, a message with the error will be printed to the sc
 
 By default, tables will be converted via Chrome web browser by taking screenshots of them. If you don't have Chrome installed or cannot 
 get chrome to work, select 'matplotlib' for the table conversion.
-
-## Dependencies
-
-* nbconvert
-* requests
-* Google Chrome / Brave browser
-* matplotlib (for cropping images and if Chrome browser does not work)
-* BeautifulSoup (For parsing markdown tables)
