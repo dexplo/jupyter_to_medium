@@ -1,0 +1,52 @@
+[tool.poetry]
+name = "jupyter-to-medium"
+version = "0.2.5"
+description = "Publish a Jupyter Notebook as a Medium blogpost"
+authors = ["dexplo <petrou.theodore@gmail.com>"]
+maintainers = ["mjam03 <markjamison03@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+homepage = "https://github.com/dexplo/jupyter_to_medium"
+repository = "https://github.com/dexplo/jupyter_to_medium"
+documentation = "https://www.dexplo.org/jupyter_to_medium/"
+classifiers = [
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+
+[tool.poetry.urls]
+Changelog = "https://github.com/dexplo/jupyter_to_medium/releases"
+
+[tool.poetry.dependencies]
+python = ">=3.7,<3.11"
+beautifulsoup4 = "^4.10.0"
+matplotlib = "^3.5.0"
+nbconvert = "^6.3.0"
+numpy = "^1.21.4"
+requests = "^2.26.0"
+jupyter-contrib-nbextensions = "^0.5.1"
+jupyter = "^1.0.0"
+
+[tool.poetry.dev-dependencies]
+flake8 = "^4.0.1"
+black = "^21.11b1"
+pytest = "^6.2.5"
+pytest-cov = "^3.0.0"
+coverage = {extras = ["toml"], version = "^6.1.2"}
+nox = "^2021.10.1"
+nox-poetry = "^0.9.0"
+
+# let pytest coverage know where code is
+[tool.coverage.paths]
+source = ["src", "*/site-packages"]
+
+[tool.poetry.scripts]
+jupyter_to_medium = "jupyter_to_medium._command_line:main"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
