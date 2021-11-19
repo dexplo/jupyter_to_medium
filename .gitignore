@@ -12,3 +12,6 @@ Jupyter to Medium Initial Post_files/
 Jupyter to Medium Initial Post_medium.md
 *_files/
 environment.yml
+.coverage
+.nox
+.pytest_cache

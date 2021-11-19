@@ -1,0 +1,114 @@
+name: Release
+
+# runs on new successful push to master
+# success is controlled by the tests workflow
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  release:
+    name: Release
+    # just run on latest os with 3.9 python
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v2.4.0
+        with:
+          fetch-depth: 2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2.2.2
+        with:
+          python-version: "3.9"
+
+      # install CI build dependencies
+      - name: Upgrade pip
+        run: |
+          pip install --constraint=.github/workflows/constraints.txt pip
+          pip --version
+      - name: Install Poetry
+        run: |
+          pip install --constraint=.github/workflows/constraints.txt poetry
+          poetry --version
+      # checks if there was a commit before this one
+      # HEAD^ gets 1 commit before HEAD
+      # rev-parse --verify --quiet returns git object sha
+      # whole command sets this equal to a var called sha
+      # that is used in the next step
+      - name: Check if there is a parent commit
+        id: check-parent-commit
+        run: |
+          echo "::set-output name=sha::$(git rev-parse --verify --quiet HEAD^)"
+      # if we have a valid parent commit
+      # then we must have an associated poetry version
+      # this command runs 'poetry version' and fetches the version number only
+      # i.e. instead of 'tennisim 0.1.0' it just returns '0.1.0'
+      # that's what the $2 does
+      # once done, it checks and compares the two versions (old + new)
+      # if version has bumped then it sets the new version as 'tag'
+      # to be used in the next step
+      - name: Detect and tag new version
+        id: check-version
+        if: steps.check-parent-commit.outputs.sha
+        uses: salsify/action-detect-and-tag-new-version@v2.0.1
+        with:
+          version-command: |
+            bash -o pipefail -c "poetry version | awk '{ print \$2 }'"
+      # if version hasn't bumped, then bump dev version as will not
+      # release to PyPI bu just TestPyPI
+      - name: Bump version for developmental release
+        if: "! steps.check-version.outputs.tag"
+        run: |
+          poetry version patch &&
+          version=$(poetry version | awk '{ print $2 }') &&
+          poetry version $version.dev.$(date +%s)
+      # build the package
+      - name: Build package
+        run: |
+          poetry build --ansi
+      # publish to PyPI if we've bumped version
+      - name: Publish package on PyPI
+        if: steps.check-version.outputs.tag
+        uses: pypa/gh-action-pypi-publish@v1.4.2
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_TOKEN }}
+      # otherwise we're just publishing to TestPyPI
+      - name: Publish package on TestPyPI
+        if: "! steps.check-version.outputs.tag"
+        uses: pypa/gh-action-pypi-publish@v1.4.2
+        with:
+          user: __token__
+          password: ${{ secrets.TEST_PYPI_TOKEN }}
+          repository_url: https://test.pypi.org/legacy/
+
+      # draft a new release if tag isn't blank i.e. we've bumped version
+      - name: Publish the release notes
+        uses: release-drafter/release-drafter@v5.15.0
+        with:
+          publish: ${{ steps.check-version.outputs.tag != '' }}
+          tag: ${{ steps.check-version.outputs.tag }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # after 'release' job, draft documentation
+  deploy-docs:
+    # again just use latest os and python
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2.4.0
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
+      # grab poetry, use it to install dependencies and package
+      - run: pip install poetry
+      - run: poetry config virtualenvs.create false --local
+      - run: poetry install
+      # install libraries to make docs
+      - run: pip install -r docs/requirements.txt
+      # make them
+      # note this makes docs but doesn't update README.md for repo
+      - run: mkdocs gh-deploy --force
