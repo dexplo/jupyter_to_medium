@@ -67,10 +67,10 @@ jobs:
       # setup integration token on the runner so tests will publish
       # this is specific to the package
       - name: upload integration token
-      shell: bash
-      env:
-        TOKEN: ${{ secrets.INTEGRATION_TOKEN }}
-      run: mkdir $HOME/.jupyter_to_medium && echo "$TOKEN" >> $HOME/.jupyter_to_medium/integration_token
+        shell: bash
+        env:
+          TOKEN: ${{ secrets.INTEGRATION_TOKEN }}
+        run: mkdir $HOME/.jupyter_to_medium && echo "$TOKEN" >> $HOME/.jupyter_to_medium/integration_token
       # run nox testing using selected python version
       # session is passed by env.NOXSESSION above
       - name: Run Nox
