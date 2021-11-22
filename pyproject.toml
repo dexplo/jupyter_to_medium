@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "jupyter-to-medium"
-version = "0.2.9"
+version = "0.2.10"
 description = "Publish a Jupyter Notebook as a Medium blogpost"
 authors = ["dexplo <petrou.theodore@gmail.com>"]
 maintainers = ["mjam03 <markjamison03@gmail.com>"]

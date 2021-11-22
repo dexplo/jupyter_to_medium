@@ -2,10 +2,11 @@
 
 [![](https://img.shields.io/pypi/v/jupyter_to_medium)](https://pypi.org/project/jupyter_to_medium)
 [![PyPI - License](https://img.shields.io/pypi/l/jupyter_to_medium)](LICENSE)
+[![codecov](https://codecov.io/gh/dexplo/jupyter_to_medium/branch/master/graph/badge.svg?token=948J8ECAQT)](https://codecov.io/gh/dexplo/jupyter_to_medium)
 
 Publish Jupyter Notebooks as Medium blog posts directly from your notebook with the help of jupyter_to_medium.
 
-![](docs/images/social_share_small.png)
+![](https://raw.githubusercontent.com/dexplo/jupyter_to_medium/master/docs/images/social_share_small.png)
 
 ## Target User
 
@@ -44,7 +45,7 @@ Before using this package, you must request an integration token from Medium by 
 
 Once your request to create integration tokens is accepted, navigate to <a href="https://medium.com/me/settings">your Medium settings.</a> Towards the bottom of the page exists the section on Integration Tokens. Enter a description for the token (`jupyter_to_medium` is a good choice) and then create the token.
 
-![png](docs/images/integration_token.png)
+![png](https://raw.githubusercontent.com/dexplo/jupyter_to_medium/master/docs/images/integration_token.png)
 
 ### Save your integration token
 
@@ -68,19 +69,19 @@ There are three ways to publish notebooks:
 
 After installation, open the notebook you wish to publish and select the option `File -> Deploy as -> Medium Post`
 
-![png](docs/images/menu_option.png)
+![png](https://raw.githubusercontent.com/dexplo/jupyter_to_medium/master/docs/images/menu_option.png)
 
 A new browser tab will open with a short form that needs to be completed.
 
-![png](docs/images/form.png)
+![png](https://raw.githubusercontent.com/dexplo/jupyter_to_medium/master/docs/images/form.png)
 
 After clicking publish, the notebook and all images will be uploaded to Medium. Any HTML tables (such as pandas DataFrames) will be converted to images (via chrome), as Medium has no ability to represent tables. This is a time consuming process, so be prepared to wait. Check your terminal for updates. If successful, you'll get the following response with a link to view the post.
 
-![png](docs/images/success.png)
+![png](https://raw.githubusercontent.com/dexplo/jupyter_to_medium/master/docs/images/success.png)
 
 Click the link to view the post.
 
-![png](docs/images/post.png)
+![png](https://raw.githubusercontent.com/dexplo/jupyter_to_medium/master/docs/images/post.png)
 
 ### Finalize and publish on Medium
 
