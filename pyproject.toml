@@ -44,6 +44,10 @@ nox-poetry = "^0.9.0"
 [tool.coverage.paths]
 source = ["src", "*/site-packages"]
 
+[tool.coverage.run]
+branch = true
+source = ["jupyter_to_medium"]
+
 [tool.poetry.scripts]
 jupyter_to_medium = "jupyter_to_medium._command_line:main"
 

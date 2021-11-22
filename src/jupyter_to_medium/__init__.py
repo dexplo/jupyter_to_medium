@@ -1,3 +1,6 @@
+from jupyter_to_medium._publish_to_medium import publish
+
+
 def _jupyter_nbextension_paths():
     return [
         dict(
