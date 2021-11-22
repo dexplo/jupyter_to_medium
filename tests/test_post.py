@@ -1,4 +1,4 @@
-from ._publish_to_medium import publish
+from jupyter_to_medium._publish_to_medium import publish
 
 
 class TestPost:
