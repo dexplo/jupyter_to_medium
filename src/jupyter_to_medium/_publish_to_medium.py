@@ -417,14 +417,14 @@ def publish(
         When 'matplotlib', the matplotlib table function will be used to
         produce the table.
 
-    --gistify: bool, default `False`
+    gistify: bool, default `False`
         Medium has poor formatting for embedded code. To prevent chunks of
         code showing unformatted in an article, this option will automatically
         create gists for you and embed them in your article. This requires you
         to first generate a Personal Access Token (PAT) on github that is then
         used, similar to the Medium Integration Token, to create the gists.
 
-    --gist_threshold: int, default 5
+    gist_threshold: int, default 5
         If chosen to use gists for code blocks, this sets the length in lines
         of code for which to make code blocks into gists. This is to prevent
         gists of only several lines unless desired.

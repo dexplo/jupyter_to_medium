@@ -159,7 +159,7 @@ parser.add_argument(
     default="chrome",
 )
 parser.add_argument("--gistify", type=bool, default=False)
-parser.add_argument("--gist_threshold", type=int, default=5)
+parser.add_argument("--gist-threshold", type=int, default=5)
 
 
 def main():
