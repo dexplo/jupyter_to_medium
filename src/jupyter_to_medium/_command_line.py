@@ -106,10 +106,14 @@ Optional Keyword Arguments
     generate a Personal Access Token (PAT) on github that is then used,
     similar to the Medium Integration Token, to create the gists.
 
---gist_threshold
+--gist-threshold
     If chosen to use gists for code blocks, this sets the length in lines of
     code for which to make code blocks into gists. This is to prevent gists of
     only several lines unless desired.
+    
+--public-gists
+    Whether to create the gists as public (can be found by search engines)
+    or private (only accessible through link).
 
 Examples
 ========
@@ -160,6 +164,7 @@ parser.add_argument(
 )
 parser.add_argument("--gistify", type=bool, default=False)
 parser.add_argument("--gist-threshold", type=int, default=5)
+parser.add_argument("--public-gists", type=bool, default=False)
 
 
 def main():

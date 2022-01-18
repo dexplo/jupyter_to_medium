@@ -37,6 +37,7 @@ def upload(model, handler):
         "table_conversion",
         "gistify",
         "gist_threshold",
+        "public_gists"
     ]
 
     kwargs = {arg: handler.get_query_argument(arg, None) for arg in arguments}
@@ -49,6 +50,7 @@ def upload(model, handler):
     kwargs["canonical_url"] = kwargs["canonical_url"].strip() or None
     kwargs["save_markdown"] = kwargs["save_markdown"] == "True"
     kwargs["gistify"] = kwargs["gistify"] == "True"
+    kwargs["public_gists"] = kwargs["public_gists"] == "True"
     if kwargs["gist_threshold"] == "":
         kwargs["gist_threshold"] = 5
     else:

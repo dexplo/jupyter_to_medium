@@ -45,7 +45,7 @@ def get_formatted_gist_code(response, output_type):
 
 
 def create_gist(
-    title, description, content, output_type="medium", github_token=None
+    title, description, content, output_type="medium", github_token=None, public=True,
 ):
     """
     Takes code string, creates gist, returns url for publication embedding
@@ -83,7 +83,7 @@ def create_gist(
     params = {"scope": "gist"}
     payload = {
         "description": description,
-        "public": True,
+        "public": public,
         "files": {title: {"content": content}},
     }
     # make a request
@@ -123,6 +123,7 @@ def gistPostprocessor(
     lang_ext=".py",
     output_type="medium",
     gist_threshold=5,
+    public=True,
 ):
     """
     Iterate over listify'ed markdown, identify code, insert gist http instead
@@ -165,6 +166,7 @@ def gistPostprocessor(
                     gist_name,
                     code_block,
                     output_type,
+                    public=public
                 )
                 # now add to our new md string
                 new_md_str += "\n" + short_code + "\n"
