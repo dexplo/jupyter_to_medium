@@ -197,7 +197,7 @@ class Publish:
             # fetch the language type from the resource metadata
             lang_ext = self.nb["metadata"]["language_info"]["file_extension"]
             try:
-                md, gist_dict = gistPostprocessor(
+                md, gist_url = gistPostprocessor(
                     contents,
                     self.title,
                     lang_ext=lang_ext,
@@ -209,17 +209,16 @@ class Publish:
         else:
             # don't gistify, just return same .md file and empty gist dict
             md = self.md
-            gist_dict = {}
+            gist_url = None
 
-        return md, gist_dict
+        return md, gist_url
 
     def save_gist_urls(self):
-        local_image_dir = Path(self.title + "_gist_urls")
-        full_path = self.nb_home / local_image_dir
-        with open(full_path, "a") as f:
-            f.write("\n".join(self.gist_dict))
-            f.write("\n")
-
+        if self.gist_url is not None:
+            local_image_dir = Path(self.title + "_gist_url")
+            full_path = self.nb_home / local_image_dir
+            with open(full_path, "a") as f:
+                f.write(self.gist_url+"\n")
 
     def load_images_to_medium(self):
         """
@@ -328,7 +327,7 @@ class Publish:
         self.md, self.image_data_dict = self.create_markdown()
         # check if we want to convert code blocks to gists
         # if so resave the markdown with links to created gists
-        self.md, self.gist_dict = self.gistify_markdown()
+        self.md, self.gist_url = self.gistify_markdown()
         # save the urls of the gists we just created
         # this enables us to delete them later
         self.save_gist_urls()

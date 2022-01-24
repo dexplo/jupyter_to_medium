@@ -44,29 +44,33 @@ def get_formatted_gist_code(response, output_type):
         return response["html_url"]
 
 
-def create_gist(
-    title, description, content, output_type="medium", github_token=None, public=True,
-):
+def create_gists(gists, description, output_type="medium", github_token=None, public=True):
     """
-    Takes code string, creates gist, returns url for publication embedding
-    Can see git ref here:
-    https://docs.github.com/en/rest/reference/gists#create-a-gist
-    Parameters
-    ----------
-    title : str
-        gist title - by default a random uuid with notebook lang ext (e.g. .py)
-        added so gist has desired linting
-    description: str
-        gist description - by default the space-stripped notebook title with _n
-        e.g. 'My New Article' --> MyNewArticle_0 for first gist in notebook
-    content: str
-        str code block to be made into gist from markdown
-    output_type: str
-        desired publication name
-    github_token: str
-        can pass github personal access token
-        else defaults to ~/.jupyter_to_medium/github_token
-    """
+        Takes code strings, creates a single gist with multiple files,
+        returns url for publication embedding
+        Can see git ref here:
+        https://docs.github.com/en/rest/reference/gists#create-a-gist
+        Parameters
+        ----------
+        gists: list
+            a list of tuples: (gist file name, content)
+        description: str
+            gist description - by default the space-stripped notebook title
+            e.g. 'My New Article' --> MyNewArticle
+        output_type: str
+            desired publication name
+        github_token: str
+            can pass github personal access token
+            else defaults to ~/.jupyter_to_medium/github_token
+        public: bool
+            whether to create the gist as public (True) or secret (False)
+            Note: secret gists can be accessed by knowing their exact url.
+            From github docs:
+            " Public gists show up in Discover, where people can browse new gists as
+              they're created. They're also searchable, so you can use them if you'd
+              like other people to find and see your work. Secret gists don't show up
+              in Discover and are not searchable. Secret gists aren't private."
+        """
     GITHUB_API = "https://api.github.com"
     try:
         API_TOKEN = get_github_api_token(github_token)
@@ -81,10 +85,11 @@ def create_gist(
     # headers, parameters, payload
     headers = {"Authorization": "token %s" % API_TOKEN}
     params = {"scope": "gist"}
+    files={fn:{"content":content} for fn, content in gists}
     payload = {
         "description": description,
         "public": public,
-        "files": {title: {"content": content}},
+        "files": files,
     }
     # make a request
     res = requests.post(
@@ -99,7 +104,6 @@ def create_gist(
         raise ValueError("Problem with gistify-ing:\n" + res.text)
 
     return output
-
 
 def gist_namer(art_title, num):
     """
@@ -141,12 +145,12 @@ def gistPostprocessor(
         only gistify code snippets with a line length greater than this
     """
 
-    gist_dict = {}
     new_md_str = ""
     code_block_started = False
     code_block = []
-    gist_count = 0
-    code_block_length = 0
+    # We will collect all parts in this list, before saving them to the same gist:
+    gists = []
+    PLACEHOLDER = '@PLACEHOLDER_FOR_GIST_URL4321@'
 
     for line in markdown_list:
         if line.startswith("```") and not code_block_started:
@@ -155,41 +159,39 @@ def gistPostprocessor(
         elif line.startswith("```") and code_block_started:
             # we must have the end of a code block
             # check if code block is greater than threshold
-            if len(code_block) > gist_threshold:
-                # convert code block list to string
-                code_block = "".join(code_block)
-                # let's replace it with a gist
-                # time to gistify the code we have
-                gist_name = gist_namer(art_title, gist_count)
-                short_code = create_gist(
-                    str(uuid.uuid4()) + lang_ext,
-                    gist_name,
-                    code_block,
-                    output_type,
-                    public=public
-                )
-                # now add to our new md string
-                new_md_str += "\n" + short_code + "\n"
-                # update gist_dict
-                gist_dict[short_code] = code_block
-                # update gist count
-                gist_count += 1
-            else:
-                # let's keep it as it is, we need to add back the ```
-                code_block = "".join(code_block)
-                new_md_str += "```\n" + code_block + "```\n"
+            lcb = len(code_block)
+            # convert code block list to string
+            code_block = "".join(code_block)
+
+            # Skip empty cells:
+            if code_block.replace('\n','') != "":
+                if lcb > gist_threshold:
+
+                    # The filename within the gist:
+                    fn = "part_%02i%s" % (len(gists)+1, lang_ext)
+
+                    gists.append((fn, code_block))
+
+                    # We don't know the gist url yet, as it is not created. So we only use a
+                    # placeholder, which we will later replace:
+                    new_md_str += f"\n{PLACEHOLDER}?file={fn}\n "
+
+                else:
+                    # let's keep it as it is, we need to add back the ```
+                    new_md_str += "```\n" + code_block + "```\n"
             # reset our looping vars
-            code_block_length = 0
             code_block = []
             code_block_started = False
         elif code_block_started:
             # add code to the code_block until we hit the end of the block
             # increment block length
             code_block.append(line)
-            code_block_length += 1
         else:
             # non-code markdown so just add it
             new_md_str += line
 
-    # return our new markdown and the gist_dict
-    return new_md_str, gist_dict
+    # time to gistify the code we have
+    url = create_gists(gists, art_title, output_type=output_type, public=public)
+    new_md_str = new_md_str.replace(PLACEHOLDER, url)
+    # return our new markdown and the url
+    return new_md_str, url
