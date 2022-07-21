@@ -30,6 +30,9 @@ numpy = "^1.21.4"
 requests = "^2.26.0"
 jupyter-contrib-nbextensions = "^0.5.1"
 jupyter = "^1.0.0"
+jinja = "<=2.11.3"
+markupsafe = "<=2.0.1"
+
 
 [tool.poetry.dev-dependencies]
 flake8 = "^4.0.1"
