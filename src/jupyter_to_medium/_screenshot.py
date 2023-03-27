@@ -93,6 +93,7 @@ class Screenshot:
         self.css = self.get_css(fontsize)
         self.encode_base64 = encode_base64
         self.limit_crop = limit_crop
+        self.enlarge_attempts = 0
 
     def get_css(self, fontsize):
         mod_dir = Path(__file__).resolve().parent
@@ -146,8 +147,10 @@ class Screenshot:
             self.ss_height = int(self.ss_height * 1.2)
             enlarge = True
 
-        if enlarge:
-            return self.take_screenshot()
+        if self.enlarge_attempts < 15:
+            if enlarge:
+                self.enlarge_attempts += 1
+                return self.take_screenshot()
 
         return self.crop(img, all_white_vert, all_white_horiz)
 
