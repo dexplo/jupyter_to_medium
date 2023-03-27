@@ -29,7 +29,7 @@ jobs:
       # define our matrix as all op systems and 4 python versions
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: [3.7, 3.8, 3.9]
+        python-version: [3.8, 3.9]
         session: [tests]
 
     # configure --session for nox to only run a specifc subset of test

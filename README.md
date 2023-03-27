@@ -43,7 +43,7 @@ Before using this package, you must request an integration token from Medium by 
 
 ### Creating the integration token
 
-Once your request to create integration tokens is accepted, navigate to <a href="https://medium.com/me/settings">your Medium settings.</a> Towards the bottom of the page exists the section on Integration Tokens. Enter a description for the token (`jupyter_to_medium` is a good choice) and then create the token.
+Once your request to create integration tokens is accepted, navigate to <a href="https://medium.com/me/settings">your Medium settings.</a> In the 'Secuity & Apps' section at the bottom you'll see 'Integration tokens'. Enter a description for the token (`jupyter_to_medium` is a good choice) and then create the token.
 
 ![png](https://raw.githubusercontent.com/dexplo/jupyter_to_medium/master/docs/images/integration_token.png)
 

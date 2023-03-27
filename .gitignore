@@ -9,6 +9,7 @@ site/
 *.pyc
 *.json
 Jupyter to Medium Initial Post_files/
+notebooks/
 Jupyter to Medium Initial Post_medium.md
 *_files/
 environment.yml
