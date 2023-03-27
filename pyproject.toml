@@ -10,7 +10,6 @@ homepage = "https://github.com/dexplo/jupyter_to_medium"
 repository = "https://github.com/dexplo/jupyter_to_medium"
 documentation = "https://www.dexplo.org/jupyter_to_medium/"
 classifiers = [
-    "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "License :: OSI Approved :: MIT License",
@@ -22,7 +21,7 @@ classifiers = [
 Changelog = "https://github.com/dexplo/jupyter_to_medium/releases"
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.11"
+python = ">=3.8,<3.11"
 beautifulsoup4 = "^4.12.0"
 matplotlib = "^3.7.1"
 nbconvert = "^7.2.10"

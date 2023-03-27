@@ -27,7 +27,7 @@ except ImportError:
 # --python=${{ matrix.python-version }}
 # which dictates which version of python is run on each runner
 package = "jupyter_to_medium"
-python_versions = ["3.9", "3.8", "3.7"]
+python_versions = ["3.9", "3.8"]
 nox.needs_version = ">= 2021.6.6"
 # options for nox sessions
 # again, github actions will pass one of these through the following lines
