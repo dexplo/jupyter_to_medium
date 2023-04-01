@@ -30,8 +30,7 @@ def is_latex_cell(cell):
 
 
 def render_latex(formula, fontsize=10, dpi=200, format_="png"):
-    """Renders LaTeX formula into image.
-    """
+    """Renders LaTeX formula into image."""
     # set formatting
     mpl_context = {
         "text.usetex": False,
@@ -43,7 +42,7 @@ def render_latex(formula, fontsize=10, dpi=200, format_="png"):
     # use formatting and make text figure
     with plt.style.context(mpl_context):
         fig = plt.figure(figsize=(0.01, 0.01))
-        fig.text(0, 0, u"${}$".format(formula), fontsize=fontsize)
+        fig.text(0, 0, f"${formula}$", fontsize=fontsize)
     # create bytes buffer
     buffer_ = StringIO()
     # save fig to buffer and close it
@@ -158,13 +157,13 @@ def format_multiline_latex(latex: list) -> str:
 def format_latex(latex: str) -> str:
 
     # seperate handling for one liners vs multi-liners
-    latex = latex.split("\n")
-    if len(latex) == 1:
+    latex_list = latex.split("\n")
+    if len(latex_list) == 1:
         # then we have a 1 liner
-        lt = format_single_line_latex(latex[0])
+        lt = format_single_line_latex(latex_list[0])
     else:
         # else multiline statement
-        lt = format_multiline_latex(latex)
+        lt = format_multiline_latex(latex_list)
     return lt
 
 

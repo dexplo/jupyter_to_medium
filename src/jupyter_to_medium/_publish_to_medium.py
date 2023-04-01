@@ -63,9 +63,7 @@ class Publish:
 
     def validate_args(self):
         if self.publish_status != "draft":
-            raise ValueError(
-                'Only "draft" is allowed as a publish status for now'
-            )
+            raise ValueError('Only "draft" is allowed as a publish status for now')
 
         licenses = [
             "all-rights-reserved",
@@ -82,17 +80,13 @@ class Publish:
             raise ValueError("License must be one of", licenses)
 
         if not isinstance(self.tags, list):
-            raise TypeError(
-                "Must use a list of strings for the tags and not", self.tags
-            )
+            raise TypeError("Must use a list of strings for the tags and not", self.tags)
 
         if self.table_conversion not in ("chrome", "matplotlib"):
-            raise ValueError(
-                '`table_version` must be either "chrome" or "matplotlib"'
-            )
+            raise ValueError('`table_version` must be either "chrome" or "matplotlib"')
 
     def get_resources(self):
-        """ Creates a dict of meta data to be passed around during conversion
+        """Creates a dict of meta data to be passed around during conversion
         process. Most important bit is the choice of converter to convert
         markdown html tables into images that show nicely in Medium
 
@@ -103,9 +97,7 @@ class Publish:
         if self.table_conversion == "chrome":
             from ._screenshot import Screenshot
 
-            converter = Screenshot(
-                center_df=True, fontsize=14, chrome_path=self.chrome_path
-            ).run
+            converter = Screenshot(center_df=True, fontsize=14, chrome_path=self.chrome_path).run
         else:
             from ._matplotlib_table import TableMaker
 
@@ -156,10 +148,7 @@ class Publish:
         for d in data:
             if d["name"] == self.pub_name:
                 return d["id"]
-        raise ValueError(
-            f"Publication {self.pub_name} was not found.\n"
-            f"Here is the publication data returned from Medium\n\n{data}"
-        )
+        raise ValueError(f"Publication {self.pub_name} was not found.\n" f"Here is the publication data returned from Medium\n\n{data}")
 
     def create_markdown(self):
 
@@ -238,17 +227,12 @@ class Publish:
                 print("loading image to medium")
                 name = fp.stem
                 file_payload = {"image": (name, data, f"image/{extension}")}
-                r = requests.post(
-                    self.IMAGE_URL, headers=self.headers, files=file_payload
-                )
+                r = requests.post(self.IMAGE_URL, headers=self.headers, files=file_payload)
                 req_json = r.json()
                 try:
                     new_url = req_json["data"]["url"]
                 except KeyError:
-                    raise ValueError(
-                        "Problem loading image {name}.{extension} to Medium: "
-                        + r.text
-                    )
+                    raise ValueError("Problem loading image {name}.{extension} to Medium: " + r.text)
                 # this is the line that updates the markdown to point to the
                 # Medium image servers for the uploaded images
                 self.md = self.md.replace(file, new_url)
@@ -298,9 +282,7 @@ class Publish:
             json_data["tags"] = self.tags
 
         # add 30s timeout to prevent timeout response for large articles
-        req = requests.post(
-            post_url, headers=self.headers, json=json_data, timeout=30
-        )
+        req = requests.post(post_url, headers=self.headers, json=json_data, timeout=30)
         try:
             self.result = req.json()
         except Exception:

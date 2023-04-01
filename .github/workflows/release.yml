@@ -102,7 +102,7 @@ jobs:
       - uses: actions/checkout@v2.4.0
       - uses: actions/setup-python@v2
         with:
-          python-version: 3.x
+          python-version: "3.9"
       # grab poetry, use it to install dependencies and package
       - run: pip install poetry
       - run: poetry config virtualenvs.create false --local

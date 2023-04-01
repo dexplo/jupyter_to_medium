@@ -37,7 +37,7 @@ class TableMaker:
         num_cols = sum(val[-1] for val in rows[0])
         new_rows = []
         rowspan = {}
-        for i, row in enumerate(rows):
+        for _, row in enumerate(rows):
             new_row = []
             col_loc = 0
             j = 0
@@ -123,9 +123,7 @@ class TableMaker:
             for vals in row:
                 cell_max_width = 0
                 for text in vals[0].split("\n"):
-                    cell_max_width = max(
-                        cell_max_width, self.get_text_width(text)
-                    )
+                    cell_max_width = max(cell_max_width, self.get_text_width(text))
                 row_widths.append(cell_max_width)
             all_text_widths.append(row_widths)
         return np.array(all_text_widths) + 15
@@ -162,14 +160,12 @@ class TableMaker:
         texts = [row[idx][0] for row in self.rows]
         new_texts = []
         new_max_width = 0
-        for i, (text, col_width) in enumerate(zip(texts, col_widths)):
+        for _, (text, col_width) in enumerate(zip(texts, col_widths)):
             if col_width > mult * max_width and len(text) > self.wrap_length:
                 width = max(self.wrap_length, int(len(text) * mult))
                 new_text = textwrap.fill(text, width, break_long_words=False)
                 new_texts.append(new_text)
-                new_max_width = max(
-                    new_max_width, self.get_text_width(new_text)
-                )
+                new_max_width = max(new_max_width, self.get_text_width(new_text))
             else:
                 new_texts.append(text)
 
@@ -243,12 +239,10 @@ class TableMaker:
                 self.fig.add_artist(p)
 
             if i == self.num_header_rows - 1:
-                line = mlines.Line2D(
-                    [x0, x0 + total_width], [y, y], color="black"
-                )
+                line = mlines.Line2D([x0, x0 + total_width], [y, y], color="black")
                 self.fig.add_artist(line)
 
-        w, h = self.fig.get_size_inches()
+        _, h = self.fig.get_size_inches()
         start = self.figwidth * min(x0, 0.1)
         end = self.figwidth - start
         bbox = Bbox([[start - 0.1, y * h], [end + 0.1, h]])
