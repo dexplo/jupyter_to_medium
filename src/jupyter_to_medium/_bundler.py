@@ -8,6 +8,14 @@ from ._publish_to_medium import publish
 
 
 def _jupyter_bundlerextension_paths():
+    """Function used to install extension when the following is called on comand line:
+    jupyter bundlerextension enable --py jupyter_to_medium._bundler --sys-prefix
+    Jupyter docs here:
+    https://jupyter-notebook.readthedocs.io/en/stable/extending/bundler_extensions.html#enabling-disabling-bundler-extensions
+
+    Returns:
+        list: config needed to install extension
+    """
     return [
         {
             # the name of the bundle
@@ -37,18 +45,20 @@ def upload(model, handler):
         "table_conversion",
         "gistify",
         "gist_threshold",
+        "public_gists"
     ]
 
     kwargs = {arg: handler.get_query_argument(arg, None) for arg in arguments}
     path = model["path"]
     kwargs["filename"] = path
     kwargs["integration_token"] = kwargs["integration_token"].strip() or None
-    kwargs["pub_name"] == kwargs["pub_name"].strip() or None
+    kwargs["pub_name"] = kwargs["pub_name"].strip() or None
     kwargs["tags"] = [tag.strip() for tag in kwargs["tags"].split(",")[:5]]
     kwargs["notify_followers"] = kwargs["notify_followers"] == "True"
     kwargs["canonical_url"] = kwargs["canonical_url"].strip() or None
     kwargs["save_markdown"] = kwargs["save_markdown"] == "True"
     kwargs["gistify"] = kwargs["gistify"] == "True"
+    kwargs["public_gists"] = kwargs["public_gists"] == "True"
     if kwargs["gist_threshold"] == "":
         kwargs["gist_threshold"] = 5
     else:
@@ -85,7 +95,7 @@ def upload(model, handler):
 def read_html(name):
     mod_path = Path(__file__).parent
     html_path = mod_path / "static" / f"{name}.html"
-    return open(html_path).read()
+    return open(html_path, encoding="utf-8").read()
 
 
 def get_html_form(xsrf_input, title):

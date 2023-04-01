@@ -106,10 +106,14 @@ Optional Keyword Arguments
     generate a Personal Access Token (PAT) on github that is then used,
     similar to the Medium Integration Token, to create the gists.
 
---gist_threshold
+--gist-threshold
     If chosen to use gists for code blocks, this sets the length in lines of
     code for which to make code blocks into gists. This is to prevent gists of
     only several lines unless desired.
+    
+--public-gists
+    Whether to create the gists as public (can be found by search engines)
+    or private (only accessible through link).
 
 Examples
 ========
@@ -120,18 +124,14 @@ Created by Ted Petrou (https://www.dunderdata.com)
 
 """
 
-parser = argparse.ArgumentParser(
-    formatter_class=CustomFormatter, add_help=False, usage=argparse.SUPPRESS
-)
+parser = argparse.ArgumentParser(formatter_class=CustomFormatter, add_help=False, usage=argparse.SUPPRESS)
 parser.add_argument("filename", default=False)
 parser.add_argument("-h", "--help", action="store_true", dest="help")
 parser.add_argument("--integration-token", type=str)
 parser.add_argument("--pub-name", type=str)
 parser.add_argument("--title", type=str)
 parser.add_argument("--tags", type=str)
-parser.add_argument(
-    "--publish-status", type=str, choices=["draft"], default="draft"
-)
+parser.add_argument("--publish-status", type=str, choices=["draft"], default="draft")
 parser.add_argument("--notify-followers", type=bool, default=False)
 parser.add_argument(
     "--license",
@@ -160,6 +160,7 @@ parser.add_argument(
 )
 parser.add_argument("--gistify", type=bool, default=False)
 parser.add_argument("--gist-threshold", type=int, default=5)
+parser.add_argument("--public-gists", type=bool, default=False)
 
 
 def main():
