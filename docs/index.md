@@ -133,7 +133,8 @@ jtm.publish('My Awesome Jupyter Notebook.ipynb',
             save_markdown=False,
             table_conversion='chrome',
             gistify=False,
-            gist_threshold=5
+            gist_threshold=5,
+            public_gists=True
             )
 ```
 
