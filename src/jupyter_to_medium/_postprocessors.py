@@ -1,7 +1,11 @@
 import json
 from pathlib import Path
-import requests
 import uuid
+
+import requests
+
+# define github api up top
+GITHUB_API = "https://api.github.com"
 
 
 def write_file(file_name, new_content):
@@ -37,16 +41,14 @@ def get_formatted_gist_code(response, output_type):
     """
     if output_type == "hugo":
         owner = response["owner"]["login"]
-        id = response["id"]
-        short_code = "{{< gist " + owner + " " + id + " >}}"
+        gist_id = response["id"]
+        short_code = "{{< gist " + owner + " " + gist_id + " >}}"
         return short_code
     else:
         return response["html_url"]
 
 
-def create_gist(
-    title, description, content, output_type="medium", github_token=None
-):
+def create_gist(title, description, content, output_type="medium", github_token=None):
     """
     Takes code string, creates gist, returns url for publication embedding
     Can see git ref here:
@@ -67,9 +69,8 @@ def create_gist(
         can pass github personal access token
         else defaults to ~/.jupyter_to_medium/github_token
     """
-    GITHUB_API = "https://api.github.com"
     try:
-        API_TOKEN = get_github_api_token(github_token)
+        api_token = get_github_api_token(github_token)
     except Exception:
         raise ValueError(
             "Problem fetching Github Token \n \
@@ -79,7 +80,7 @@ def create_gist(
     # form a request URL
     url = GITHUB_API + "/gists"
     # headers, parameters, payload
-    headers = {"Authorization": "token %s" % API_TOKEN}
+    headers = {"Authorization": f"token {api_token}"}
     params = {"scope": "gist"}
     payload = {
         "description": description,
@@ -87,16 +88,14 @@ def create_gist(
         "files": {title: {"content": content}},
     }
     # make a request
-    res = requests.post(
-        url, headers=headers, params=params, data=json.dumps(payload)
-    )
+    res = requests.post(url, headers=headers, params=params, data=json.dumps(payload), timeout=60)
     # if 201 response, then proceed, else fail with error
     try:
         # success with gist creation
         j = json.loads(res.text)
         output = get_formatted_gist_code(j, output_type)
     except Exception:
-        raise ValueError("Problem with gistify-ing:\n" + res.text)
+        raise ValueError(f"Problem with gistify-ing:\n {res.text}")
 
     return output
 

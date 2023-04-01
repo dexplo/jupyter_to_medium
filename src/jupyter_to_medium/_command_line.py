@@ -120,18 +120,14 @@ Created by Ted Petrou (https://www.dunderdata.com)
 
 """
 
-parser = argparse.ArgumentParser(
-    formatter_class=CustomFormatter, add_help=False, usage=argparse.SUPPRESS
-)
+parser = argparse.ArgumentParser(formatter_class=CustomFormatter, add_help=False, usage=argparse.SUPPRESS)
 parser.add_argument("filename", default=False)
 parser.add_argument("-h", "--help", action="store_true", dest="help")
 parser.add_argument("--integration-token", type=str)
 parser.add_argument("--pub-name", type=str)
 parser.add_argument("--title", type=str)
 parser.add_argument("--tags", type=str)
-parser.add_argument(
-    "--publish-status", type=str, choices=["draft"], default="draft"
-)
+parser.add_argument("--publish-status", type=str, choices=["draft"], default="draft")
 parser.add_argument("--notify-followers", type=bool, default=False)
 parser.add_argument(
     "--license",

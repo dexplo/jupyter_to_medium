@@ -1,8 +1,9 @@
 import base64
-import mistune
-from nbconvert.preprocessors import Preprocessor
 from pathlib import Path
 import re
+
+import mistune
+from nbconvert.preprocessors import Preprocessor
 import requests
 
 from ._latex import create_attachment_dict
@@ -41,12 +42,8 @@ def get_image_files(md_source, only_http=False):
 
 def replace_md_tables(image_data_dict, md_source, converter, cell_index):
     i = 0
-    table = re.compile(
-        r"^ *\|(.+)\n *\|( *[-:]+[-| :]*)\n((?: *\|.*(?:\n|$))*)\n*", re.M
-    )
-    nptable = re.compile(
-        r"^ *(\S.*\|.*)\n *([-:]+ *\|[-| :]*)\n((?:.*\|.*(?:\n|$))*)\n*", re.M
-    )
+    table = re.compile(r"^ *\|(.+)\n *\|( *[-:]+[-| :]*)\n((?: *\|.*(?:\n|$))*)\n*", re.M)
+    nptable = re.compile(r"^ *(\S.*\|.*)\n *([-:]+ *\|[-| :]*)\n((?:.*\|.*(?:\n|$))*)\n*", re.M)
 
     def md_table_to_image(match):
         nonlocal i
@@ -96,7 +93,7 @@ class LatexPreprocessor(Preprocessor):
             attach_dict = create_attachment_dict(cell, img_str)
             cell["attachments"] = attach_dict
             cid = cell["id"]
-            cell["source"] = "![{}.png](attachment:{}.png)".format(cid, cid)
+            cell["source"] = f"![{cid}.png](attachment:{cid}.png)"
 
         return cell, resources
 
@@ -126,23 +123,17 @@ class MarkdownPreprocessor(Preprocessor):
                 # if embedded from web link then use requests to grab data
                 # only grab from secure urls
                 if "https://" in image_file:
-                    response = requests.get(image_file)
+                    response = requests.get(image_file, timeout=60)
                     if response.status_code == 200:
                         image_data = response.content
                     else:
                         # unsuccessful request
-                        print(
-                            "Unsuccessful request for image: {}".format(
-                                image_file
-                            )
-                        )
+                        print(f"Unsuccessful request for image: {image_file}")
                 else:
                     # read the image data in from the file path
                     image_data = open(nb_home / image_file, "rb").read()
                 # replace the image name in the markdown with the new name
-                cell["source"] = cell["source"].replace(
-                    image_file, new_image_name
-                )
+                cell["source"] = cell["source"].replace(image_file, new_image_name)
                 # add this image to the dict
                 image_data_dict[new_image_name] = image_data
 
@@ -153,14 +144,10 @@ class MarkdownPreprocessor(Preprocessor):
                 ext = Path(src).suffix
                 if ext.startswith(".jpg"):
                     ext = ".jpeg"
-                new_image_name = (
-                    f"markdown_{cell_index}_local_image_tag_{i}{ext}"
-                )
+                new_image_name = f"markdown_{cell_index}_local_image_tag_{i}{ext}"
                 image_data = open(nb_home / src, "rb").read()
                 image_data_dict[new_image_name] = image_data
-                cell["source"] = cell["source"].replace(
-                    entire_tag, f"![]({new_image_name})"
-                )
+                cell["source"] = cell["source"].replace(entire_tag, f"![]({new_image_name})")
 
             # find images attached to markdown through dragging and dropping
             # this is because those images will have 'attachements' key
@@ -174,15 +161,11 @@ class MarkdownPreprocessor(Preprocessor):
                     ext = mime_type.split("/")[-1]
                     if ext == "jpg":
                         ext = "jpeg"
-                    new_image_name = (
-                        f"markdown_{cell_index}_attachment_{i}_{j}.{ext}"
-                    )
+                    new_image_name = f"markdown_{cell_index}_attachment_{i}_{j}.{ext}"
                     # decode the image data and add to overall image dict
                     image_data = base64.b64decode(base64_data)
                     image_data_dict[new_image_name] = image_data
-                    cell["source"] = cell["source"].replace(
-                        f"attachment:{image_name}", new_image_name
-                    )
+                    cell["source"] = cell["source"].replace(f"attachment:{image_name}", new_image_name)
 
             # find markdown tables
             cell["source"] = replace_md_tables(
@@ -215,10 +198,7 @@ class NoExecuteDataFramePreprocessor(Preprocessor):
                             output["data"] = {key: value}
                             break
 
-                    if (
-                        not has_image_mimetype
-                        and "text/html" in output["data"]
-                    ):
+                    if not has_image_mimetype and "text/html" in output["data"]:
                         html = output["data"]["text/html"]
                         if "</table>" in html and "</style>" in html:
                             output["data"] = {"image/png": converter(html)}
