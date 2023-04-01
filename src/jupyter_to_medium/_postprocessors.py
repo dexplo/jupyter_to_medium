@@ -1,6 +1,5 @@
 import json
 from pathlib import Path
-import uuid
 
 import requests
 
@@ -48,34 +47,33 @@ def get_formatted_gist_code(response, output_type):
         return response["html_url"]
 
 
-
 def create_gists(gists, description, output_type="medium", github_token=None, public=True):
     """
-        Takes code strings, creates a single gist with multiple files,
-        returns url for publication embedding
-        Can see git ref here:
-        https://docs.github.com/en/rest/reference/gists#create-a-gist
-        Parameters
-        ----------
-        gists: list
-            a list of tuples: (gist file name, content)
-        description: str
-            gist description - by default the space-stripped notebook title
-            e.g. 'My New Article' --> MyNewArticle
-        output_type: str
-            desired publication name
-        github_token: str
-            can pass github personal access token
-            else defaults to ~/.jupyter_to_medium/github_token
-        public: bool
-            whether to create the gist as public (True) or secret (False)
-            Note: secret gists can be accessed by knowing their exact url.
-            From github docs:
-            " Public gists show up in Discover, where people can browse new gists as
-              they're created. They're also searchable, so you can use them if you'd
-              like other people to find and see your work. Secret gists don't show up
-              in Discover and are not searchable. Secret gists aren't private."
-        """
+    Takes code strings, creates a single gist with multiple files,
+    returns url for publication embedding
+    Can see git ref here:
+    https://docs.github.com/en/rest/reference/gists#create-a-gist
+    Parameters
+    ----------
+    gists: list
+        a list of tuples: (gist file name, content)
+    description: str
+        gist description - by default the space-stripped notebook title
+        e.g. 'My New Article' --> MyNewArticle
+    output_type: str
+        desired publication name
+    github_token: str
+        can pass github personal access token
+        else defaults to ~/.jupyter_to_medium/github_token
+    public: bool
+        whether to create the gist as public (True) or secret (False)
+        Note: secret gists can be accessed by knowing their exact url.
+        From github docs:
+        " Public gists show up in Discover, where people can browse new gists as
+          they're created. They're also searchable, so you can use them if you'd
+          like other people to find and see your work. Secret gists don't show up
+          in Discover and are not searchable. Secret gists aren't private."
+    """
     GITHUB_API = "https://api.github.com"
     try:
         api_token = get_github_api_token(github_token)
@@ -90,7 +88,7 @@ def create_gists(gists, description, output_type="medium", github_token=None, pu
     # headers, parameters, payload
     headers = {"Authorization": f"token {api_token}"}
     params = {"scope": "gist"}
-    files={fn:{"content":content} for fn, content in gists}
+    files = {fn: {"content": content} for fn, content in gists}
     payload = {
         "description": description,
         "public": public,
@@ -107,6 +105,7 @@ def create_gists(gists, description, output_type="medium", github_token=None, pu
         raise ValueError(f"Problem with gistify-ing:\n {res.text}")
 
     return output
+
 
 def gist_namer(art_title, num):
     """
@@ -153,7 +152,7 @@ def gistPostprocessor(
     code_block = []
     # We will collect all parts in this list, before saving them to the same gist:
     gists = []
-    PLACEHOLDER = '@PLACEHOLDER_FOR_GIST_URL4321@'
+    PLACEHOLDER = "@PLACEHOLDER_FOR_GIST_URL4321@"
 
     for line in markdown_list:
         if line.startswith("```") and not code_block_started:
@@ -167,11 +166,11 @@ def gistPostprocessor(
             code_block = "".join(code_block)
 
             # Skip empty cells:
-            if code_block.replace('\n','') != "":
+            if code_block.replace("\n", "") != "":
                 if lcb > gist_threshold:
 
                     # The filename within the gist:
-                    fn = "part_%02i%s" % (len(gists)+1, lang_ext)
+                    fn = "part_%02i%s" % (len(gists) + 1, lang_ext)
 
                     gists.append((fn, code_block))
 
