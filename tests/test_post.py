@@ -12,7 +12,7 @@ class TestPost:
         publish("tests/notebooks/Test Image Creation.ipynb")
 
     def test_gistify(self):
-        publish("tests/notebooks/Test Gistify Markdown.ipynb", gistify=True)
+        publish("tests/notebooks/Test Gistify Markdown.ipynb")
 
     def test_latex(self):
         publish("tests/notebooks/Test Latex.ipynb")
