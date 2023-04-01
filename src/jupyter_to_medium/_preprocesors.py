@@ -123,7 +123,7 @@ class MarkdownPreprocessor(Preprocessor):
                 # if embedded from web link then use requests to grab data
                 # only grab from secure urls
                 if "https://" in image_file:
-                    response = requests.get(image_file, timeout=60)
+                    response = requests.get(image_file)
                     if response.status_code == 200:
                         image_data = response.content
                     else:

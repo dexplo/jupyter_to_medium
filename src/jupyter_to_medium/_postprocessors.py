@@ -88,7 +88,7 @@ def create_gist(title, description, content, output_type="medium", github_token=
         "files": {title: {"content": content}},
     }
     # make a request
-    res = requests.post(url, headers=headers, params=params, data=json.dumps(payload), timeout=60)
+    res = requests.post(url, headers=headers, params=params, data=json.dumps(payload))
     # if 201 response, then proceed, else fail with error
     try:
         # success with gist creation
