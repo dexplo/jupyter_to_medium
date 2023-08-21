@@ -111,25 +111,24 @@ class Screenshot:
         with open(temp_html, "w") as f:
             f.write(self.html)
 
-        with open(temp_img, "wb") as f:
-            args = ["--enable-logging", "--disable-gpu", "--headless"]
+        args = ["--enable-logging", "--disable-gpu", "--headless"]
 
-            if self.ss_width and self.ss_height:
-                args.append(f"--window-size={self.ss_width},{self.ss_height}")
+        if self.ss_width and self.ss_height:
+            args.append(f"--window-size={self.ss_width},{self.ss_height}")
 
-            args += [
-                "--hide-scrollbars",
-                f"--screenshot={str(temp_img)}",
-                str(temp_html),
-            ]
+        args += [
+            "--hide-scrollbars",
+            f"--screenshot={str(temp_img)}",
+            str(temp_html),
+        ]
 
-            subprocess.run(executable=self.chrome_path, args=args)
+        subprocess.run(executable=self.chrome_path, args=args)
 
         with open(temp_img, "rb") as f:
             img_bytes = f.read()
 
         buffer = io.BytesIO(img_bytes)
-        img = mimage.imread(buffer)
+        img = mimage.imread(buffer, format="png")
         return self.possibly_enlarge(img)
 
     def possibly_enlarge(self, img):
