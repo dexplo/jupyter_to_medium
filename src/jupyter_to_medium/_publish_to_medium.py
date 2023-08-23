@@ -1,6 +1,8 @@
 import json
+import re
 import urllib.parse
 from pathlib import Path
+from typing import Optional
 
 import requests
 import nbformat
@@ -170,12 +172,26 @@ class Publish:
         self.resources.pop("converter")
         me = MarkdownExporter()
         md, self.resources = me.from_notebook_node(self.nb, self.resources)
+        md = self.fix_jpeg_ext(md)
 
         image_data_dict = {
             **self.resources["image_data_dict"],
             **self.resources["outputs"],
         }
         return md, image_data_dict
+
+    def fix_jpeg_ext(self, md: Optional[str] = None):
+        # Medium gives errors if our file names end with .jpg and not .jpeg
+        for k in ["image_data_dict", "outputs"]:
+            d = self.resources[k]
+            file_names = list(d.keys())
+            for file_name in file_names:
+                if file_name.endswith(".jpg"):
+                    d[file_name.replace(".jpg", ".jpeg")] = d.pop(file_name)
+        if md is not None:
+            md = re.sub(r"(!\[jpeg])\((.*)\.jpg\)", r"\1(\2.jpeg)", md)
+
+        return md
 
     def gistify_markdown(self):
         if self.gistify:
